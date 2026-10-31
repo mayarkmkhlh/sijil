@@ -1,0 +1,56 @@
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { missingFields, orderDraftSchema } from "@mursal/shared";
+import { loadEnv } from "./env.js";
+
+const env = loadEnv();
+const app = new Hono();
+
+app.use(
+  "/api/*",
+  cors({
+    origin: "http://localhost:5173",
+  }),
+);
+
+app.get("/api/health", (c) =>
+  c.json({
+    ok: true,
+    museSparkModel: env.MUSE_SPARK_MODEL,
+    modelApiConfigured: env.modelApiConfigured,
+  }),
+);
+
+// Confirms the shared order schema is wired. Real extraction comes next.
+app.post("/api/orders/preview", async (c) => {
+  const body: unknown = await c.req.json();
+  const parsed = orderDraftSchema.safeParse(body);
+  if (!parsed.success) {
+    return c.json(
+      {
+        ok: false,
+        issues: parsed.error.issues.map((issue) => ({
+          path: issue.path.join("."),
+          message: issue.message,
+        })),
+      },
+      422,
+    );
+  }
+  return c.json({
+    ok: true,
+    order: parsed.data,
+    missing: missingFields(parsed.data),
+  });
+});
+
+serve(
+  {
+    fetch: app.fetch,
+    port: env.PORT,
+  },
+  (info) => {
+    console.log(`API listening on http://localhost:${info.port}`);
+  },
+);
