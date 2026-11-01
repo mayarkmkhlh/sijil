@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { OrderSchema } from "./order.js";
+import { OrderSchema, extractionJsonSchema, parseExtractionResult } from "./order.js";
 
 // Fictional chat: نورة wants a black abaya, size M, delivered in حي النرجس, Riyadh.
 const validOrder = {
@@ -8,7 +8,7 @@ const validOrder = {
     {
       name: "عباية سوداء",
       qty: 1,
-      variant: { size: "M", colour: "أسود" },
+      variant: { size: "M", colour: "أسود", text: null },
       unit_price: 250,
     },
   ],
@@ -47,5 +47,23 @@ describe("OrderSchema", () => {
     expect(result.success).toBe(false);
     if (result.success) return;
     expect(result.error.issues[0]?.path).toEqual(["items", 0, "qty"]);
+  });
+
+  it("accepts a complaint as a non-order", () => {
+    const result = parseExtractionResult({
+      noOrder: true,
+      reason: "late delivery complaint, not a new order",
+    });
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+    expect(result.data).toEqual({
+      noOrder: true,
+      reason: "late delivery complaint, not a new order",
+    });
+  });
+
+  it("keeps the model JSON Schema root as one object", () => {
+    expect(extractionJsonSchema).toMatchObject({ type: "object" });
+    expect(extractionJsonSchema).not.toHaveProperty("anyOf");
   });
 });

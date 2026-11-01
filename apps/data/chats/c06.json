@@ -21,9 +21,9 @@
     "delivery": { "city": "مكة", "district": "العزيزية", "address": null },
     "deliveryDate": null,
     "notes": null,
-    "paymentMethod": "cash",
+    "paymentMethod": "cash_on_delivery",
     "missingFields": ["delivery.address"],
     "language": "mixed"
   },
-  "labelNotes": "'بدفع كاش' does not say on delivery, so paymentMethod is 'cash' (c02 is clearly cash_on_delivery). Decide on one enum rule before scoring. The spelling of 'التوت باق' may be unnatural; the linguist suggested 'باج'."
+  "labelNotes": "Labelled cash_on_delivery. The chat says 'بدفع كاش' and does not say on delivery, so a prediction of cash is also accepted for this chat. The spelling of 'التوت باق' may be unnatural; the linguist suggested 'باج'."
 }

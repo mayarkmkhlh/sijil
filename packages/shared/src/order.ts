@@ -33,13 +33,18 @@ export const paymentMethodSchema = z.enum([
   "paypal",
   "mada",
   "apple_pay",
+  "stc_pay",
+  "card",
+  "card_link",
 ]);
 
 const optionalText = z.string().min(1).nullable();
 
+/** size and colour when the chat names them. text is everything else: pack size, flavour, fabric. */
 export const variantSchema = z.object({
   size: optionalText,
   colour: optionalText,
+  text: optionalText,
 });
 
 export const ItemSchema = z.object({
@@ -66,7 +71,7 @@ export const deliveryDateSchema = z
 export const missingFieldSchema = z
   .string()
   .regex(
-    /^(customer_name|currency|delivery_city|delivery_district|delivery_address|delivery_date|payment_method|items|items\.\d+\.(name|qty|unit_price|variant|variant\.size|variant\.colour))$/,
+    /^(customer_name|currency|delivery_city|delivery_district|delivery_address|delivery_date|payment_method|items|items\.\d+\.(name|qty|unit_price|variant|variant\.size|variant\.colour|variant\.text))$/,
   );
 
 export const OrderSchema = z.object({
@@ -87,8 +92,44 @@ export const OrderSchema = z.object({
 export type Item = z.infer<typeof ItemSchema>;
 export type Order = z.infer<typeof OrderSchema>;
 
-/** JSON Schema sent to Meta structured output. Draft 2020-12, Zod's default. */
+/** A complaint or any other chat that is not a new order. */
+export const noOrderSchema = z.object({
+  noOrder: z.literal(true),
+  reason: z.string().min(1),
+});
+
+export const extractionResultSchema = z.union([OrderSchema, noOrderSchema]);
+export type NoOrder = z.infer<typeof noOrderSchema>;
+export type ExtractionResult = z.infer<typeof extractionResultSchema>;
+
+/**
+ * One object for Meta structured output. A top-level union becomes anyOf,
+ * which the API rejects at the root. parseExtractionResult unwraps this
+ * into an order or a noOrder result.
+ */
+export const modelExtractionSchema = z.object({
+  noOrder: z.boolean(),
+  reason: z.string().min(1).nullable(),
+  order: OrderSchema.nullable(),
+});
+
+/** JSON Schema for one order. Draft 2020-12, Zod's default. */
 export const orderJsonSchema = z.toJSONSchema(OrderSchema);
+
+/** JSON Schema sent to the model. Root stays a single object. */
+export const extractionJsonSchema = z.toJSONSchema(modelExtractionSchema);
+
+export function parseExtractionResult(value: unknown) {
+  const direct = extractionResultSchema.safeParse(value);
+  if (direct.success) return direct;
+
+  const wrapped = modelExtractionSchema.safeParse(value);
+  if (!wrapped.success) return wrapped;
+  if (wrapped.data.noOrder) {
+    return noOrderSchema.safeParse({ noOrder: true, reason: wrapped.data.reason });
+  }
+  return OrderSchema.safeParse(wrapped.data.order);
+}
 
 const requiredOrderFields = [
   "customer_name",
@@ -123,6 +164,7 @@ export function deriveMissingFields(order: Order): Order["missing_fields"] {
     }
     if (item.variant.size === null) missing.push(`items.${index}.variant.size`);
     if (item.variant.colour === null) missing.push(`items.${index}.variant.colour`);
+    if (item.variant.text === null) missing.push(`items.${index}.variant.text`);
   });
 
   return missingFieldSchema.array().parse(missing);
