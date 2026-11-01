@@ -1,4 +1,4 @@
-import { OrderSchema, deriveMissingFields } from "@sijil/shared";
+import { OrderSchema, deriveMissingFields, orderJsonSchema, type Order } from "@sijil/shared";
 import { loadEnv } from "./env.js";
 
 const env = loadEnv();
@@ -7,66 +7,6 @@ const chat = `هلا، ابغى العباية السوداء مقاس M
 الاسم نورة
 الجوال 0550000000
 الرياض، حي النرجس`;
-
-const orderSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: [
-    "customer_name",
-    "items",
-    "currency",
-    "delivery_city",
-    "delivery_district",
-    "delivery_address",
-    "delivery_date",
-    "payment_method",
-    "notes",
-    "missing_fields",
-    "language",
-    "confidence",
-  ],
-  properties: {
-    customer_name: { type: ["string", "null"] },
-    items: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["name", "qty", "variant", "unit_price"],
-        properties: {
-          name: { type: ["string", "null"] },
-          qty: { type: ["integer", "null"] },
-          variant: {
-            type: ["object", "null"],
-            additionalProperties: false,
-            required: ["size", "colour"],
-            properties: {
-              size: { type: ["string", "null"] },
-              colour: { type: ["string", "null"] },
-            },
-          },
-          unit_price: { type: ["number", "null"] },
-        },
-      },
-    },
-    currency: {
-      type: ["string", "null"],
-      enum: ["USD", "SAR", "AED", "KWD", "BHD", "QAR", "OMR", null],
-    },
-    delivery_city: { type: ["string", "null"] },
-    delivery_district: { type: ["string", "null"] },
-    delivery_address: { type: ["string", "null"] },
-    delivery_date: { type: ["string", "null"], description: "YYYY-MM-DD" },
-    payment_method: {
-      type: ["string", "null"],
-      enum: ["cash_on_delivery", "bank_transfer", "paypal", "mada", "apple_pay", null],
-    },
-    notes: { type: ["string", "null"] },
-    missing_fields: { type: "array", items: { type: "string" } },
-    language: { type: "string", enum: ["gulf_ar", "msa", "en", "mixed"] },
-    confidence: { type: "number", minimum: 0, maximum: 1 },
-  },
-} as const;
 
 const response = await fetch(`${env.MODEL_API_BASE_URL}/chat/completions`, {
   method: "POST",
@@ -98,7 +38,7 @@ const response = await fetch(`${env.MODEL_API_BASE_URL}/chat/completions`, {
     ],
     response_format: {
       type: "json_schema",
-      json_schema: { name: "order", schema: orderSchema },
+      json_schema: { name: "order", schema: orderJsonSchema },
     },
   }),
 });
@@ -121,6 +61,5 @@ if (!parsed.success) {
 }
 
 const missing = deriveMissingFields(parsed.data);
-console.log(
-  JSON.stringify({ order: { ...parsed.data, missing_fields: missing }, missing }, null, 2),
-);
+const order: Order = { ...parsed.data, missing_fields: missing };
+console.log(JSON.stringify({ order, missing }, null, 2));
