@@ -16,7 +16,12 @@ function findRepoRoot(start: string): string {
 }
 
 const repoRoot = findRepoRoot(dirname(fileURLToPath(import.meta.url)));
-config({ path: resolve(repoRoot, ".env") });
+const envPath = resolve(repoRoot, ".env");
+
+// Render has no .env file. Dashboard variables are already on process.env.
+if (existsSync(envPath)) {
+  config({ path: envPath });
+}
 
 const envSchema = z.object({
   MODEL_API_KEY: z.string().default(""),

@@ -1,8 +1,11 @@
 import { Pool } from "pg";
 import "./env.js";
 
-const connectionString = process.env.DATABASE_URL;
+// Laptop migrations use Render's External URL, which requires SSL.
+// The deployed API uses the Internal URL and leaves this unset.
+const ssl = process.env.DATABASE_SSL === "true" ? { rejectUnauthorized: false as const } : undefined;
 
 export const pool = new Pool({
-  connectionString,
+  connectionString: process.env.DATABASE_URL,
+  ssl,
 });
