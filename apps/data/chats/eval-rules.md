@@ -5,6 +5,7 @@ Status: checked by a 4-member AI council (Gulf-Arabic linguist, senior engineer,
 ## Split
 - Dev set: c01-c06. Use these to build and tune prompts.
 - Hold-out: c07-c10. Do not tune prompts on them. Run them last, once per model.
+- Optional: c11. Outside the 10-chat score. Include it only when you want the pin-link trap.
 
 ## Labelling rules (used for every chat)
 - Keys: customerName, items[{name, variant, quantity, unitPrice}], currency, delivery{city, district, address}, deliveryDate, notes, paymentMethod, missingFields[], language.
@@ -30,5 +31,5 @@ Status: checked by a 4-member AI council (Gulf-Arabic linguist, senior engineer,
 8. Also report JSON validity (including extra keys) and latency and token usage per chat.
 9. Report raw counts (k of n), not percentages. At n=10 one chat moves the score by 10 points; do not claim differences smaller than about 15 points. Run each model more than once if time allows. Call it a "10-chat smoke test", not a benchmark.
 
-## Still to add (optional, strongest remaining gap)
-- c11: customer sends a location pin or maps link and says "same as last time", with no item, city or address typed. Label: items empty, delivery.city and delivery.address null and in missingFields, notes mention the pin. Tests whether the model invents an order or an address from a link.
+## Optional chat
+- c11 is written. The customer sends a pin link and says "same as last time", with no item, city, or address typed. Items are empty, city and address are null and listed in missingFields, and the notes mention the pin. Score it only when you opt in. It does not change the 10-chat count.

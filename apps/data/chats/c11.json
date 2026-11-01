@@ -1,0 +1,26 @@
+{
+  "fictional": true,
+  "id": "c11",
+  "split": "optional",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "location pin plus 'same as last time', with no item, city, or address typed",
+  "messages": [
+    { "from": "customer", "text": "هلا، نفس آخر مرة لو سمحت" },
+    { "from": "customer", "text": "هذا اللوكيشن https://maps.example.com/pin" },
+    { "from": "seller", "text": "ابشر، اكتبي لي الطلب والحي لو سمحت" },
+    { "from": "customer", "text": "نفس الطلب السابق، أرسلت الموقع فوق" }
+  ],
+  "expected": {
+    "customerName": null,
+    "items": [],
+    "currency": null,
+    "delivery": { "city": null, "district": null, "address": null },
+    "deliveryDate": null,
+    "notes": "العميلة أرسلت لوكيشن وقالت نفس آخر مرة، من غير ما تكتب الصنف أو العنوان",
+    "paymentMethod": null,
+    "missingFields": ["customerName", "items", "delivery.city", "delivery.address", "paymentMethod"],
+    "language": "gulf"
+  },
+  "labelNotes": "Optional, and outside the 10-chat score. 'نفس آخر مرة' and the link are not an item list or an address. A model that fills items, a city, or a street from the link has invented them. This is still an order attempt, so noOrder is wrong. An empty items array is the missing field 'items'."
+}
