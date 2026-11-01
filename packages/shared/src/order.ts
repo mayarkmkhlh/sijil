@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { z } from "zod/v4";
 
 export const orderStatusSchema = z.enum([
   "extracted",
@@ -86,6 +86,9 @@ export const OrderSchema = z.object({
 
 export type Item = z.infer<typeof ItemSchema>;
 export type Order = z.infer<typeof OrderSchema>;
+
+/** JSON Schema sent to Meta structured output. Draft 2020-12, Zod's default. */
+export const orderJsonSchema = z.toJSONSchema(OrderSchema);
 
 const requiredOrderFields = [
   "customer_name",

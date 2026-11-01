@@ -6,6 +6,7 @@ export {
   deriveMissingFields,
   languageSchema,
   missingFieldSchema,
+  orderJsonSchema,
   orderStatusSchema,
   orderStatuses,
   paymentMethodSchema,
