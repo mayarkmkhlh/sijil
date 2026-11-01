@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { missingFields, orderDraftSchema } from "@mursal/shared";
+import { OrderSchema, deriveMissingFields } from "@sijil/shared";
 import { loadEnv } from "./env.js";
 
 const env = loadEnv();
@@ -25,7 +25,7 @@ app.get("/api/health", (c) =>
 // Confirms the shared order schema is wired. Real extraction comes next.
 app.post("/api/orders/preview", async (c) => {
   const body: unknown = await c.req.json();
-  const parsed = orderDraftSchema.safeParse(body);
+  const parsed = OrderSchema.safeParse(body);
   if (!parsed.success) {
     return c.json(
       {
@@ -38,10 +38,11 @@ app.post("/api/orders/preview", async (c) => {
       422,
     );
   }
+  const missing = deriveMissingFields(parsed.data);
   return c.json({
     ok: true,
-    order: parsed.data,
-    missing: missingFields(parsed.data),
+    order: { ...parsed.data, missing_fields: missing },
+    missing,
   });
 });
 

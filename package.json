@@ -1,5 +1,5 @@
 {
-  "name": "mursal",
+  "name": "sijil",
   "private": true,
   "type": "module",
   "packageManager": "pnpm@10.18.0",
@@ -11,8 +11,8 @@
   },
   "scripts": {
     "dev": "pnpm -r --parallel --if-present dev",
-    "dev:web": "pnpm --filter @mursal/web dev",
-    "dev:api": "pnpm --filter @mursal/api dev",
+    "dev:web": "pnpm --filter @sijil/web dev",
+    "dev:api": "pnpm --filter @sijil/api dev",
     "typecheck": "pnpm -r --if-present typecheck"
   }
 }

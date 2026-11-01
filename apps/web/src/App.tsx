@@ -38,7 +38,7 @@ export function App() {
 
   return (
     <main>
-      <p className="eyebrow">Mursal</p>
+      <p className="eyebrow">Sijil</p>
       <h1>Local setup</h1>
       <HealthLine health={health} />
     </main>
