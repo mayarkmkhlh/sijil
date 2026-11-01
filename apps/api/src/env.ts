@@ -6,11 +6,15 @@ import { z } from "zod";
 
 function findRepoRoot(start: string): string {
   let dir = start;
-  for (let i = 0; i < 6; i += 1) {
-    if (existsSync(resolve(dir, "pnpm-workspace.yaml"))) return dir;
-    const parent = dirname(dir);
-    if (parent === dir) break;
-    dir = parent;
+  try {
+    for (let i = 0; i < 6; i += 1) {
+      if (existsSync(resolve(dir, "pnpm-workspace.yaml"))) return dir;
+      const parent = dirname(dir);
+      if (parent === dir) break;
+      dir = parent;
+    }
+  } catch {
+    return start;
   }
   return start;
 }
