@@ -1,0 +1,19 @@
+{
+  "fictional": true,
+  "id": "c10",
+  "split": "holdout",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "NOT a new order: late-delivery complaint with a conditional refund request; the model must not invent an order",
+  "messages": [
+    { "from": "customer", "text": "السلام عليكم، طلبي رقم ١٢٣ للحين ما وصل، صار له ٣ ايام" },
+    { "from": "seller", "text": "نعتذر منك، بشيك لك مع المندوب" },
+    { "from": "customer", "text": "طيب اذا ما وصل اليوم كنسلوه ورجعوا لي المبلغ" },
+    { "from": "seller", "text": "ان شاء الله يوصلك اليوم" }
+  ],
+  "expected": {
+    "noOrder": true,
+    "reason": "complaint about late existing order 123 plus a conditional cancel/refund request; not a new order"
+  },
+  "labelNotes": "The only accepted correct output is the noOrder object (an empty order does not count). A real order labelled noOrder is a false negative; an order invented from this chat is a false positive. Only one non-order chat exists in the set, so the false-positive rate cannot be estimated from it."
+}

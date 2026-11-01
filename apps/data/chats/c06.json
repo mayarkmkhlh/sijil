@@ -1,0 +1,29 @@
+{
+  "fictional": true,
+  "id": "c06",
+  "language": "mixed",
+  "chatDate": "2026-11-02",
+  "tests": "Arabic/English code-switching, two items, details given over several turns, address missing",
+  "messages": [
+    { "from": "customer", "text": "Hi, ابي hoodie اسود و tote bag" },
+    { "from": "seller", "text": "الهودي ١٤٠ والتوت باق ٦٠. المقاس؟" },
+    { "from": "customer", "text": "Large للهودي. التوت باق أي لون عندكم؟" },
+    { "from": "seller", "text": "بيج أو أسود" },
+    { "from": "customer", "text": "بيج. بدفع كاش. اسمي هيا، مكة العزيزية" }
+  ],
+  "expected": {
+    "customerName": "هيا",
+    "items": [
+      { "name": "hoodie", "variant": "اسود, Large", "quantity": 1, "unitPrice": 140 },
+      { "name": "tote bag", "variant": "بيج", "quantity": 1, "unitPrice": 60 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "مكة", "district": "العزيزية", "address": null },
+    "deliveryDate": null,
+    "notes": null,
+    "paymentMethod": "cash",
+    "missingFields": ["delivery.address"],
+    "language": "mixed"
+  },
+  "labelNotes": "'بدفع كاش' does not say on delivery, so paymentMethod is 'cash' (c02 is clearly cash_on_delivery). Decide on one enum rule before scoring. The spelling of 'التوت باق' may be unnatural; the linguist suggested 'باج'."
+}

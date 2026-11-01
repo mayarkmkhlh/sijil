@@ -1,0 +1,29 @@
+{
+  "fictional": true,
+  "id": "c07",
+  "split": "holdout",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "gift order: the buyer never gives a name, the recipient does; no price quoted",
+  "messages": [
+    { "from": "customer", "text": "مساء الخير، ابي ارسل هدية لاختي، علبة شوكولاتة فاخرة ومعها بطاقة تهنئة بالتخرج" },
+    { "from": "seller", "text": "ابشر، العلبة موجودة، وش اسم المستلمة والعنوان؟" },
+    { "from": "customer", "text": "اسمها ريما، جدة حي الروضة، عمارة ٥ شقة ٣" },
+    { "from": "seller", "text": "والدفع؟" },
+    { "from": "customer", "text": "بدفع بالبطاقة" }
+  ],
+  "expected": {
+    "customerName": null,
+    "items": [
+      { "name": "علبة شوكولاتة فاخرة", "variant": null, "quantity": 1, "unitPrice": null }
+    ],
+    "currency": null,
+    "delivery": { "city": "جدة", "district": "الروضة", "address": "عمارة ٥ شقة ٣" },
+    "deliveryDate": null,
+    "notes": "هدية لأخت الزبونة، المستلمة: ريما؛ بطاقة تهنئة بالتخرج",
+    "paymentMethod": "card",
+    "missingFields": ["customerName"],
+    "language": "gulf"
+  },
+  "labelNotes": "Trap: a model that puts the recipient 'ريما' in customerName has invented a value and should fail the order. No price was quoted, so unitPrice and currency are null and prices are not in missingFields. All four council members gave the same substantive labels. Building plus apartment counts as building-level address. Chat lines edited after the linguist's naturalness check."
+}

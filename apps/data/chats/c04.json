@@ -1,0 +1,29 @@
+{
+  "fictional": true,
+  "id": "c04",
+  "language": "arabizi",
+  "chatDate": "2026-11-02",
+  "tests": "Arabizi, customer changes mind (quantity 3 to 2, red to black), address missing",
+  "messages": [
+    { "from": "customer", "text": "salam, abi 3 sanadel hamra mqas 38" },
+    { "from": "customer", "text": "la wait, khalli 2 bas, w el lon aswad mo hamra" },
+    { "from": "seller", "text": "ok 2 black size 38, 180 el wahda. esmak?" },
+    { "from": "customer", "text": "Sara, Dammam, Al Faisaliyah" },
+    { "from": "seller", "text": "el daf3?" },
+    { "from": "customer", "text": "STC Pay" }
+  ],
+  "expected": {
+    "customerName": "Sara",
+    "items": [
+      { "name": "sanadel", "variant": "black, size 38", "quantity": 2, "unitPrice": 180 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "Dammam", "district": "Al Faisaliyah", "address": null },
+    "deliveryDate": null,
+    "notes": null,
+    "paymentMethod": "stc_pay",
+    "missingFields": ["delivery.address"],
+    "language": "arabizi"
+  },
+  "labelNotes": "The final order is the corrected one (2 pairs, black). Council wrote the variant as 'black, size 38' or 'aswad 38'; accept either. Chat text changed from 'mu hamra' to 'mo hamra' after the linguist's naturalness check."
+}

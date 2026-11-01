@@ -1,0 +1,29 @@
+{
+  "fictional": true,
+  "id": "c03",
+  "language": "en",
+  "chatDate": "2026-11-02",
+  "tests": "English, address missing so the app must ask back",
+  "messages": [
+    { "from": "customer", "text": "Hi! Can I get 2 boxes of the date-filled maamoul and 1 saffron tea tin?" },
+    { "from": "seller", "text": "Sure, 60 SAR per maamoul box and 35 for the tea. Name?" },
+    { "from": "customer", "text": "Lama. I'll pay by card link please" },
+    { "from": "seller", "text": "And your address?" },
+    { "from": "customer", "text": "I'll send my location later" }
+  ],
+  "expected": {
+    "customerName": "Lama",
+    "items": [
+      { "name": "date-filled maamoul", "variant": "box", "quantity": 2, "unitPrice": 60 },
+      { "name": "saffron tea", "variant": "tin", "quantity": 1, "unitPrice": 35 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": null, "district": null, "address": null },
+    "deliveryDate": null,
+    "notes": "will send location later",
+    "paymentMethod": "card_link",
+    "missingFields": ["delivery.city", "delivery.address"],
+    "language": "en"
+  },
+  "labelNotes": "Council wrote the item names differently (with or without 'box'/'tin'); score items by fuzzy match, quantity and price."
+}

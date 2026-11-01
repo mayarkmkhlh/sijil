@@ -1,0 +1,26 @@
+{
+  "fictional": true,
+  "id": "c05",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "voice-note style run-on message, quantity as a word, relative date, address and payment missing",
+  "messages": [
+    { "from": "customer", "text": "هلا والله ابي طلب ابي بخور عود ثنتين ودهن عود صغير واذا ممكن توصلونه بكرة لو سمحت اسمي عبدالله وانا في الخبر حي العزيزية" },
+    { "from": "seller", "text": "تم، البخور ٨٠ للواحد والدهن ١٥٠" }
+  ],
+  "expected": {
+    "customerName": "عبدالله",
+    "items": [
+      { "name": "بخور عود", "variant": null, "quantity": 2, "unitPrice": 80 },
+      { "name": "دهن عود", "variant": "صغير", "quantity": 1, "unitPrice": 150 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "الخبر", "district": "العزيزية", "address": null },
+    "deliveryDate": "2026-11-03",
+    "notes": null,
+    "paymentMethod": null,
+    "missingFields": ["delivery.address", "paymentMethod"],
+    "language": "gulf"
+  },
+  "labelNotes": "All four council members agreed on every field. 'بكرة' (tomorrow) resolves against chatDate to 2026-11-03. The linguist suggested changing 'توصلونه' to 'توصلونها'; left unchanged because 'الطلب' (the order) is masculine, so 'توصلونه' is correct."
+}

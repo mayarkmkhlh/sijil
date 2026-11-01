@@ -1,0 +1,30 @@
+{
+  "fictional": true,
+  "id": "c09",
+  "split": "holdout",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "prices quoted per dozen and per half-dozen, quantity words, a conditional discount and a total, mixed digits",
+  "messages": [
+    { "from": "customer", "text": "السلام عليكم، ابي دزينة كوب سيراميك ونص دزينة صحون" },
+    { "from": "seller", "text": "ابشر. الاكواب ٣٦٠ على الدزينة والصحون 180 لنص الدزينة. اذا تعدى الطلب 500 عليه خصم ١٠٪" },
+    { "from": "customer", "text": "ممتاز. اسمي ام سعود، المدينة المنورة، حي قباء، شارع قباء، عمارة 8" },
+    { "from": "seller", "text": "المجموع بعد الخصم 486. الدفع؟" },
+    { "from": "customer", "text": "مدى" }
+  ],
+  "expected": {
+    "customerName": "ام سعود",
+    "items": [
+      { "name": "كوب سيراميك", "variant": null, "quantity": 12, "unitPrice": 30 },
+      { "name": "صحون", "variant": null, "quantity": 6, "unitPrice": 30 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "المدينة المنورة", "district": "قباء", "address": "شارع قباء، عمارة 8" },
+    "deliveryDate": null,
+    "notes": "خصم ١٠٪ لأن الطلب فوق 500؛ المجموع بعد الخصم 486",
+    "paymentMethod": "mada",
+    "missingFields": [],
+    "language": "gulf"
+  },
+  "labelNotes": "Rule: دزينة = 12 and نص دزينة = 6; unitPrice is the exact per-unit price (360/12 = 30, 180/6 = 30). Discount and total go in notes, unit prices stay undiscounted. 'ام سعود' is a kunya but the only name given. A council member flagged this as the label decision that distorts scores most: if the unit-price rule is wrong, every dozen-style chat is mis-scored."
+}

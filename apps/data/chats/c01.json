@@ -1,0 +1,29 @@
+{
+  "fictional": true,
+  "id": "c01",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "clean Gulf order, two items, complete address",
+  "messages": [
+    { "from": "customer", "text": "السلام عليكم، ابي كيكة شوكولاتة كبيرة وعلبة كوكيز ١٢ حبة" },
+    { "from": "seller", "text": "وعليكم السلام، تمام. وين التوصيل؟" },
+    { "from": "customer", "text": "الرياض، حي النرجس، شارع ٣٠، فيلا ١٢. اسمي نورة" },
+    { "from": "seller", "text": "الكيكة ١٢٠ والكوكيز ٤٥. الدفع؟" },
+    { "from": "customer", "text": "تحويل بنكي" }
+  ],
+  "expected": {
+    "customerName": "نورة",
+    "items": [
+      { "name": "كيكة شوكولاتة", "variant": "كبيرة", "quantity": 1, "unitPrice": 120 },
+      { "name": "كوكيز", "variant": "علبة ١٢ حبة", "quantity": 1, "unitPrice": 45 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "الرياض", "district": "النرجس", "address": "شارع ٣٠، فيلا ١٢" },
+    "deliveryDate": null,
+    "notes": null,
+    "paymentMethod": "bank_transfer",
+    "missingFields": [],
+    "language": "gulf"
+  },
+  "labelNotes": "Council disagreed only on formatting: district with or without 'حي' (normalise when scoring) and whether the cookie box is name or variant (fuzzy match)."
+}

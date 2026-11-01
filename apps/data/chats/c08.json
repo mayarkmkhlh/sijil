@@ -1,0 +1,31 @@
+{
+  "fictional": true,
+  "id": "c08",
+  "split": "holdout",
+  "language": "gulf",
+  "chatDate": "2026-11-02",
+  "tests": "address corrected mid-chat to another city; mixed Arabic-Indic and Western digits",
+  "messages": [
+    { "from": "customer", "text": "هلا ابي علبتين تمر سكري ٥٠٠ جرام" },
+    { "from": "seller", "text": "تمام، ١٥٠ للعلبة. التوصيل وين؟" },
+    { "from": "customer", "text": "الدمام حي الشاطئ، شارع 10، بيت ٤. اسمي فهد" },
+    { "from": "seller", "text": "تمام بإذن الله" },
+    { "from": "customer", "text": "لا لحظة، انا مسافر للرياض، خلها لبيت اخوي: الرياض حي الملقا، شارع ٢٢، بيت 9" },
+    { "from": "seller", "text": "ابشر عدلته. الدفع؟" },
+    { "from": "customer", "text": "كاش عند الاستلام" }
+  ],
+  "expected": {
+    "customerName": "فهد",
+    "items": [
+      { "name": "تمر سكري", "variant": "٥٠٠ جرام", "quantity": 2, "unitPrice": 150 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "الرياض", "district": "الملقا", "address": "شارع ٢٢، بيت 9" },
+    "deliveryDate": null,
+    "notes": "التوصيل لبيت أخو العميل",
+    "paymentMethod": "cash_on_delivery",
+    "missingFields": [],
+    "language": "gulf"
+  },
+  "labelNotes": "Only the final address counts; the Dammam address must not appear. 'كاش عند الاستلام' is clearly cash_on_delivery. The scorer must normalise digits (٢٢ = 22). Notes are free text, so score by presence of the brother's-house idea, not exact match."
+}

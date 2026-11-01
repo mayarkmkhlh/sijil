@@ -1,0 +1,28 @@
+{
+  "fictional": true,
+  "id": "c02",
+  "language": "msa",
+  "chatDate": "2026-11-02",
+  "tests": "deliberately formal Modern Standard Arabic, deadline in notes, street-only address",
+  "messages": [
+    { "from": "customer", "text": "مرحباً، أرغب بطلب عباءة سوداء مقاس ٥٤ بعدد قطعتين." },
+    { "from": "seller", "text": "أهلاً بك، السعر ٣٥٠ ريالاً للقطعة. ما اسمك وعنوان التوصيل؟" },
+    { "from": "customer", "text": "اسمي منى، جدة، حي الصفا، شارع الأمير سلطان." },
+    { "from": "seller", "text": "الدفع عند الاستلام أم تحويل؟" },
+    { "from": "customer", "text": "عند الاستلام، وأريدها قبل يوم الخميس." }
+  ],
+  "expected": {
+    "customerName": "منى",
+    "items": [
+      { "name": "عباءة", "variant": "سوداء، مقاس ٥٤", "quantity": 2, "unitPrice": 350 }
+    ],
+    "currency": "SAR",
+    "delivery": { "city": "جدة", "district": "الصفا", "address": "شارع الأمير سلطان" },
+    "deliveryDate": null,
+    "notes": "قبل يوم الخميس",
+    "paymentMethod": "cash_on_delivery",
+    "missingFields": [],
+    "language": "msa"
+  },
+  "labelNotes": "All four council members counted a street without a building number as a complete address; a stricter reading would mark delivery.address missing. The chat wording is intentionally stiff (linguist noted real customers write more casually); kept as the formal-MSA case."
+}
