@@ -92,4 +92,12 @@ describe("POST /api/extract", () => {
     expect(client.calls).toBe(2);
     expect(body.issues.length).toBeGreaterThan(0);
   });
+
+  it("returns 413 when the body is over 16 KB", async () => {
+    const client = fakeClient([validReply]);
+    const response = await postExtract(createApp(client), { chat: "a".repeat(16 * 1024) });
+
+    expect(response.status).toBe(413);
+    expect(client.calls).toBe(0);
+  });
 });

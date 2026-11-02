@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
 import { OrderSchema, deriveMissingFields } from "@sijil/shared";
 import { z } from "zod";
@@ -66,42 +67,49 @@ export function createApp(client: ModelClient) {
     });
   });
 
-  app.post("/api/extract", async (c) => {
-    let body: unknown;
-    try {
-      body = await c.req.json();
-    } catch {
-      return c.json({ issues: [{ path: "", message: "Request body must be JSON" }] }, 400);
-    }
-
-    const parsed = extractBodySchema.safeParse(body);
-    if (!parsed.success) return c.json({ issues: issuesOf(parsed.error) }, 400);
-
-    const chatDate = parsed.data.chatDate ?? todayInRiyadh();
-    try {
-      const outcome = await extractOrder(parsed.data.chat, chatDate, client);
-      if (!outcome.ok) {
-        return c.json({ issues: outcome.issues, attempts: outcome.attempts }, 422);
+  app.post(
+    "/api/extract",
+    bodyLimit({
+      maxSize: 16 * 1024,
+      onError: (c) => c.json({ error: "Payload too large" }, 413),
+    }),
+    async (c) => {
+      let body: unknown;
+      try {
+        body = await c.req.json();
+      } catch {
+        return c.json({ issues: [{ path: "", message: "Request body must be JSON" }] }, 400);
       }
-      if ("noOrder" in outcome.result) {
+
+      const parsed = extractBodySchema.safeParse(body);
+      if (!parsed.success) return c.json({ issues: issuesOf(parsed.error) }, 400);
+
+      const chatDate = parsed.data.chatDate ?? todayInRiyadh();
+      try {
+        const outcome = await extractOrder(parsed.data.chat, chatDate, client);
+        if (!outcome.ok) {
+          return c.json({ issues: outcome.issues, attempts: outcome.attempts }, 422);
+        }
+        if ("noOrder" in outcome.result) {
+          return c.json({
+            kind: "noOrder",
+            reason: outcome.result.reason,
+            attempts: outcome.attempts,
+          });
+        }
         return c.json({
-          kind: "noOrder",
-          reason: outcome.result.reason,
+          kind: "order",
+          order: outcome.result,
+          missing_fields: outcome.result.missing_fields,
           attempts: outcome.attempts,
         });
+      } catch (error) {
+        const message = error instanceof Error ? error.message : "model request failed";
+        console.error(message);
+        return c.json({ error: "model request failed" }, 502);
       }
-      return c.json({
-        kind: "order",
-        order: outcome.result,
-        missing_fields: outcome.result.missing_fields,
-        attempts: outcome.attempts,
-      });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "model request failed";
-      console.error(message);
-      return c.json({ error: "model request failed" }, 502);
-    }
-  });
+    },
+  );
 
   return app;
 }
