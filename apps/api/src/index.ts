@@ -2,16 +2,18 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { OrderSchema, deriveMissingFields } from "@sijil/shared";
-import { pool } from "./db.js";
 import { loadEnv } from "./env.js";
 
 const env = loadEnv();
 const app = new Hono();
+const allowedOrigins = ["http://localhost:5173", process.env.WEB_ORIGIN].filter(
+  (origin): origin is string => Boolean(origin),
+);
 
 app.use(
   "/api/*",
   cors({
-    origin: "http://localhost:5173",
+    origin: allowedOrigins,
   }),
 );
 
@@ -22,15 +24,6 @@ app.get("/api/health", (c) =>
     modelApiConfigured: env.modelApiConfigured,
   }),
 );
-
-// Temporary deploy check. Remove once the hosted database answers.
-app.get("/api/db-check", async (c) => {
-  if (!process.env.DATABASE_URL) {
-    return c.json({ ok: false, error: "DATABASE_URL is not set" }, 500);
-  }
-  const result = await pool.query<{ count: string }>("select count(*)::text as count from orders");
-  return c.json({ count: Number(result.rows[0]?.count ?? 0) });
-});
 
 // Confirms the shared order schema is wired. Real extraction comes next.
 app.post("/api/orders/preview", async (c) => {

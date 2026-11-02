@@ -15,7 +15,8 @@ export function App() {
   useEffect(() => {
     const controller = new AbortController();
 
-    fetch("/api/health", { signal: controller.signal })
+    const API = import.meta.env.VITE_API_URL ?? "";
+    fetch(`${API}/api/health`, { signal: controller.signal })
       .then(async (response) => {
         if (!response.ok) throw new Error("Health check failed");
         const body = (await response.json()) as {
