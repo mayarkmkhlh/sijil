@@ -9,6 +9,7 @@ export {
   languageSchema,
   missingFieldSchema,
   modelExtractionSchema,
+  modelOrderSchema,
   noOrderSchema,
   orderJsonSchema,
   orderStatusSchema,

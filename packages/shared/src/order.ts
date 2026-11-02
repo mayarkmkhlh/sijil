@@ -103,14 +103,15 @@ export type NoOrder = z.infer<typeof noOrderSchema>;
 export type ExtractionResult = z.infer<typeof extractionResultSchema>;
 
 /**
- * One object for Meta structured output. A top-level union becomes anyOf,
- * which the API rejects at the root. parseExtractionResult unwraps this
- * into an order or a noOrder result.
+ * What the model fills in. missing_fields is computed in code, so the model is not asked for it.
+ * The wrapper stays one object because Meta rejects a top-level anyOf.
  */
+export const modelOrderSchema = OrderSchema.omit({ missing_fields: true });
+
 export const modelExtractionSchema = z.object({
   noOrder: z.boolean(),
   reason: z.string().min(1).nullable(),
-  order: OrderSchema.nullable(),
+  order: modelOrderSchema.nullable(),
 });
 
 /** JSON Schema for one order. Draft 2020-12, Zod's default. */
@@ -128,7 +129,15 @@ export function parseExtractionResult(value: unknown) {
   if (wrapped.data.noOrder) {
     return noOrderSchema.safeParse({ noOrder: true, reason: wrapped.data.reason });
   }
-  return OrderSchema.safeParse(wrapped.data.order);
+  if (!wrapped.data.order) return OrderSchema.safeParse(wrapped.data.order);
+  const order = {
+    ...wrapped.data.order,
+    missing_fields: deriveMissingFields({
+      ...wrapped.data.order,
+      missing_fields: [],
+    }),
+  };
+  return OrderSchema.safeParse(order);
 }
 
 const requiredOrderFields = [
