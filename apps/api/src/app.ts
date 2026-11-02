@@ -5,6 +5,7 @@ import { OrderSchema, deriveMissingFields } from "@sijil/shared";
 import { z } from "zod";
 import { loadEnv } from "./env.js";
 import { extractOrder, type ModelClient } from "./extract.js";
+import { ModelRequestError } from "./muse-spark.js";
 
 const extractBodySchema = z.object({
   chat: z.string().trim().min(1, "chat is required").max(8_000, "chat is too long"),
@@ -104,9 +105,14 @@ export function createApp(client: ModelClient) {
           attempts: outcome.attempts,
         });
       } catch (error) {
-        const message = error instanceof Error ? error.message : "model request failed";
-        console.error(message);
-        return c.json({ error: "model request failed" }, 502);
+        const upstream =
+          error instanceof ModelRequestError
+            ? error.status === undefined
+              ? { kind: error.kind }
+              : { kind: error.kind, status: error.status }
+            : { kind: "network" as const };
+        console.error(error instanceof Error ? error.message : "model request failed");
+        return c.json({ error: "model request failed", upstream }, 502);
       }
     },
   );

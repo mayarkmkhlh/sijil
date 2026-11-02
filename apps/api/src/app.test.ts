@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import type { ModelClient } from "./extract.js";
+import { ModelRequestError } from "./muse-spark.js";
 
 function fakeClient(replies: string[]): ModelClient & { calls: number } {
   const state = { calls: 0 };
@@ -91,6 +92,24 @@ describe("POST /api/extract", () => {
     expect(body.attempts).toBe(2);
     expect(client.calls).toBe(2);
     expect(body.issues.length).toBeGreaterThan(0);
+  });
+
+  it("returns 502 with the upstream status when the client is refused", async () => {
+    const client: ModelClient = {
+      async complete() {
+        throw new ModelRequestError("http", 404);
+      },
+    };
+    const response = await postExtract(createApp(client), { chat: "هلا" });
+    const body = (await response.json()) as {
+      error: string;
+      upstream: { kind: string; status?: number };
+    };
+
+    expect(response.status).toBe(502);
+    expect(body.error).toBe("model request failed");
+    expect(body.upstream).toEqual({ kind: "http", status: 404 });
+    expect(JSON.stringify(body)).not.toContain("هلا");
   });
 
   it("returns 413 when the body is over 16 KB", async () => {

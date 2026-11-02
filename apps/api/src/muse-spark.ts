@@ -7,6 +7,21 @@ export type MuseSparkConfig = {
   baseUrl: string;
 };
 
+/** Meta refused the call, or the call never reached Meta. The message has no response body and no key. */
+export class ModelRequestError extends Error {
+  readonly kind: "http" | "network" | "timeout";
+  readonly status?: number;
+
+  constructor(kind: "http", status: number);
+  constructor(kind: "network" | "timeout");
+  constructor(kind: "http" | "network" | "timeout", status?: number) {
+    super(kind === "http" ? `Muse Spark request failed (${status})` : `Muse Spark request failed (${kind})`);
+    this.name = "ModelRequestError";
+    this.kind = kind;
+    this.status = status;
+  }
+}
+
 type CompletionBody = {
   choices?: Array<{
     finish_reason?: string | null;
@@ -24,30 +39,36 @@ export class MuseSparkClient implements ModelClient {
   constructor(private readonly config: MuseSparkConfig) {}
 
   async complete(messages: ChatMessage[]): Promise<string> {
-    const response = await fetch(`${this.config.baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${this.config.apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: this.config.model,
-        temperature: 0,
-        reasoning_effort: "low",
-        max_completion_tokens: 4000,
-        store: false,
-        messages,
-        response_format: {
-          type: "json_schema",
-          json_schema: { name: "extraction", schema: extractionJsonSchema },
+    let response: Response;
+    try {
+      response = await fetch(`${this.config.baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${this.config.apiKey}`,
+          "Content-Type": "application/json",
         },
-      }),
-      signal: AbortSignal.timeout(30_000),
-    });
+        body: JSON.stringify({
+          model: this.config.model,
+          temperature: 0,
+          reasoning_effort: "low",
+          max_completion_tokens: 4000,
+          store: false,
+          messages,
+          response_format: {
+            type: "json_schema",
+            json_schema: { name: "extraction", schema: extractionJsonSchema },
+          },
+        }),
+        signal: AbortSignal.timeout(30_000),
+      });
+    } catch (error) {
+      const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+      throw new ModelRequestError(timedOut ? "timeout" : "network");
+    }
 
     if (!response.ok) {
-      const detail = redact(await response.text(), this.config.apiKey).trim().slice(0, 500);
-      throw new Error(`Muse Spark request failed (${response.status}): ${detail}`);
+      await response.body?.cancel();
+      throw new ModelRequestError("http", response.status);
     }
 
     const payload = (await response.json()) as CompletionBody;
@@ -59,9 +80,4 @@ export class MuseSparkClient implements ModelClient {
     );
     return choice?.message?.content ?? "";
   }
-}
-
-function redact(text: string, secret: string): string {
-  if (!secret) return text;
-  return text.split(secret).join("[redacted]");
 }
