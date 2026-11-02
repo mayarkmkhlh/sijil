@@ -53,6 +53,7 @@ export class MuseSparkClient implements ModelClient {
     const payload = (await response.json()) as CompletionBody;
     const usage = payload.usage;
     const choice = payload.choices?.[0];
+    // finish=length means the token cap cut the JSON off. A retry uses the same cap, so it fails the same way.
     console.log(
       `muse spark tokens input=${usage?.prompt_tokens ?? "unknown"} output=${usage?.completion_tokens ?? "unknown"} reasoning=${usage?.completion_tokens_details?.reasoning_tokens ?? "unknown"} finish=${choice?.finish_reason ?? "unknown"}`,
     );
