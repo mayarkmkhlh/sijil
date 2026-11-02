@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { deriveMissingFields } from "@sijil/shared";
 import { describe, expect, it } from "vitest";
 import { extractOrder, type ChatMessage, type ModelClient } from "./extract.js";
 
@@ -98,6 +99,7 @@ describe("extractOrder", () => {
     expect(client.calls).toHaveLength(1);
     if (!outcome.ok || "noOrder" in outcome.result) return;
     expect(outcome.result.customer_name).toBe("نورة");
+    expect(outcome.result.missing_fields).toEqual(deriveMissingFields(outcome.result));
   });
 
   it("retries once when the first reply is truncated or over-confident", async () => {
@@ -109,13 +111,15 @@ describe("extractOrder", () => {
     for (const first of [truncated, overConfident]) {
       const client = fakeClient([first, valid]);
       const outcome = await extractOrder(transcript(chat), chat.chatDate, client);
-      const retryText = JSON.stringify(client.calls[1] ?? []);
+      const retryText = (client.calls[1] ?? []).map((message) => message.content).join("\n");
 
       expect(outcome.ok).toBe(true);
       expect(outcome.attempts).toBe(2);
       expect(client.calls).toHaveLength(2);
       expect(retryText).toContain(first);
       if (first === overConfident) expect(retryText).toContain("confidence");
+      if (!outcome.ok || "noOrder" in outcome.result) return;
+      expect(outcome.result.missing_fields).toEqual(deriveMissingFields(outcome.result));
     }
   });
 
