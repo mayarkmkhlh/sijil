@@ -1,9 +1,4 @@
-import {
-  deriveMissingFields,
-  parseExtractionResult,
-  type ExtractionResult,
-  type Order,
-} from "@sijil/shared";
+import { parseExtractionResult, type ExtractionResult } from "@sijil/shared";
 
 export type ChatMessage = {
   role: "system" | "user" | "assistant";
@@ -21,6 +16,8 @@ export type ExtractOrderResult =
   | { ok: true; result: ExtractionResult; attempts: number }
   | { ok: false; issues: ExtractIssue[]; attempts: number };
 
+const MAX_ATTEMPTS = 2;
+
 const systemPrompt =
   "Extract one seller order from the customer chat. " +
   "The chat may be Gulf Arabic, Modern Standard Arabic, English, or a mix. " +
@@ -36,9 +33,10 @@ const systemPrompt =
   "Otherwise set noOrder to false, reason to null, and put the order in order.";
 
 function formatIssues(issues: ExtractIssue[]): string {
-  return issues
+  const lines = issues
     .map((issue) => (issue.path ? `${issue.path}: ${issue.message}` : issue.message))
     .join("\n");
+  return `Your reply failed validation. Fix these problems and return only the corrected JSON:\n${lines}`;
 }
 
 function readReply(
@@ -62,16 +60,11 @@ function readReply(
     };
   }
 
-  if ("noOrder" in parsed.data) return { ok: true, result: parsed.data };
-  const order: Order = {
-    ...parsed.data,
-    missing_fields: deriveMissingFields(parsed.data),
-  };
-  return { ok: true, result: order };
+  return { ok: true, result: parsed.data };
 }
 
 /**
- * The retry message contains the original chat, the bad reply, and the exact error.
+ * The retry message contains the original chat, the bad reply, and an instruction to fix the exact error.
  * One retry only: a second failure is structural, and another call costs money and time.
  */
 export async function extractOrder(
@@ -85,16 +78,16 @@ export async function extractOrder(
   ];
   let issues: ExtractIssue[] = [];
 
-  for (let attempt = 1; attempt <= 2; attempt += 1) {
+  for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     const reply = await client.complete([...messages]);
     const read = readReply(reply);
     if (read.ok) return { ok: true, result: read.result, attempts: attempt };
 
     issues = read.issues;
-    if (attempt === 2) break;
+    if (attempt === MAX_ATTEMPTS) break;
     messages.push({ role: "assistant", content: reply });
     messages.push({ role: "user", content: formatIssues(issues) });
   }
 
-  return { ok: false, issues, attempts: 2 };
+  return { ok: false, issues, attempts: MAX_ATTEMPTS };
 }
