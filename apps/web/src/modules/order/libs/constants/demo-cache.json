@@ -1,0 +1,317 @@
+{
+  "c01": {
+    "kind": "order",
+    "order": {
+      "customer_name": "Nora",
+      "items": [
+        {
+          "name": "chocolate cake",
+          "qty": 1,
+          "variant": {
+            "size": "large",
+            "colour": null,
+            "text": null
+          },
+          "unit_price": 120
+        },
+        {
+          "name": "cookies",
+          "qty": 1,
+          "variant": {
+            "size": null,
+            "colour": null,
+            "text": "box of 12"
+          },
+          "unit_price": 45
+        }
+      ],
+      "currency": "SAR",
+      "delivery_city": "Riyadh",
+      "delivery_district": "Al Narjis",
+      "delivery_address": "street 30, villa 12",
+      "delivery_date": null,
+      "payment_method": "bank_transfer",
+      "notes": null,
+      "missing_fields": [
+        "delivery_date",
+        "items.0.variant.colour",
+        "items.0.variant.text",
+        "items.1.variant.size",
+        "items.1.variant.colour"
+      ],
+      "language": "en",
+      "confidence": 0.95
+    },
+    "reviews": [
+      {
+        "status": "matched",
+        "catalogId": "cake-chocolate",
+        "catalogName": "كيكة شوكولاتة",
+        "catalogPrice": 120,
+        "quotedPrice": 120
+      },
+      {
+        "status": "matched",
+        "catalogId": "cookies",
+        "catalogName": "كوكيز",
+        "catalogPrice": 45,
+        "quotedPrice": 45
+      }
+    ]
+  },
+  "c03": {
+    "kind": "order",
+    "order": {
+      "customer_name": "Lama",
+      "items": [
+        {
+          "name": "date-filled maamoul",
+          "qty": 2,
+          "variant": {
+            "size": null,
+            "colour": null,
+            "text": "boxes"
+          },
+          "unit_price": 60
+        },
+        {
+          "name": "saffron tea",
+          "qty": 1,
+          "variant": {
+            "size": null,
+            "colour": null,
+            "text": "tin"
+          },
+          "unit_price": 35
+        }
+      ],
+      "currency": "SAR",
+      "delivery_city": null,
+      "delivery_district": null,
+      "delivery_address": null,
+      "delivery_date": null,
+      "payment_method": "card_link",
+      "notes": null,
+      "missing_fields": [
+        "delivery_city",
+        "delivery_district",
+        "delivery_address",
+        "delivery_date",
+        "items.0.variant.size",
+        "items.0.variant.colour",
+        "items.1.variant.size",
+        "items.1.variant.colour"
+      ],
+      "language": "en",
+      "confidence": 0.9
+    },
+    "reviews": [
+      {
+        "status": "matched",
+        "catalogId": "maamoul",
+        "catalogName": "معمول",
+        "catalogPrice": 60,
+        "quotedPrice": 60
+      },
+      {
+        "status": "matched",
+        "catalogId": "saffron-tea",
+        "catalogName": "شاي زعفران",
+        "catalogPrice": 35,
+        "quotedPrice": 35
+      }
+    ]
+  },
+  "c08": {
+    "kind": "order",
+    "order": {
+      "customer_name": "Fahd",
+      "items": [
+        {
+          "name": "sukkari dates",
+          "qty": 2,
+          "variant": {
+            "size": null,
+            "colour": null,
+            "text": "500 grams"
+          },
+          "unit_price": 150
+        }
+      ],
+      "currency": "SAR",
+      "delivery_city": "Riyadh",
+      "delivery_district": "Al Malqa",
+      "delivery_address": "street 22, house 9",
+      "delivery_date": null,
+      "payment_method": "cash_on_delivery",
+      "notes": null,
+      "missing_fields": [
+        "delivery_date",
+        "items.0.variant.size",
+        "items.0.variant.colour"
+      ],
+      "language": "en",
+      "confidence": 0.95
+    },
+    "reviews": [
+      {
+        "status": "matched",
+        "catalogId": "sukkari-dates",
+        "catalogName": "تمر سكري",
+        "catalogPrice": 150,
+        "quotedPrice": 150
+      }
+    ]
+  },
+  "c09": {
+    "kind": "order",
+    "order": {
+      "customer_name": "Umm Saud",
+      "items": [
+        {
+          "name": "ceramic cups",
+          "qty": 12,
+          "variant": null,
+          "unit_price": 30
+        },
+        {
+          "name": "plates",
+          "qty": 6,
+          "variant": null,
+          "unit_price": 30
+        }
+      ],
+      "currency": "SAR",
+      "delivery_city": "Madinah",
+      "delivery_district": "Quba",
+      "delivery_address": "Quba street, building 8",
+      "delivery_date": null,
+      "payment_method": "mada",
+      "notes": null,
+      "missing_fields": [
+        "delivery_date",
+        "items.0.variant",
+        "items.1.variant"
+      ],
+      "language": "en",
+      "confidence": 0.98
+    },
+    "reviews": [
+      {
+        "status": "matched",
+        "catalogId": "ceramic-cup",
+        "catalogName": "كوب سيراميك",
+        "catalogPrice": 30,
+        "quotedPrice": 30
+      },
+      {
+        "status": "matched",
+        "catalogId": "plates",
+        "catalogName": "صحون",
+        "catalogPrice": 30,
+        "quotedPrice": 30
+      }
+    ]
+  },
+  "c10": {
+    "kind": "no_order",
+    "reason": "Customer is asking about status of existing order 123, not placing a new order."
+  },
+  "c01-ar": {
+    "kind": "order",
+    "order": {
+      "customer_name": "نورة",
+      "items": [
+        {
+          "name": "كيكة شوكولاتة",
+          "qty": 1,
+          "variant": {
+            "size": "كبيرة",
+            "colour": null,
+            "text": null
+          },
+          "unit_price": 120
+        },
+        {
+          "name": "كوكيز",
+          "qty": 1,
+          "variant": {
+            "size": null,
+            "colour": null,
+            "text": "١٢ حبة"
+          },
+          "unit_price": 45
+        }
+      ],
+      "currency": "SAR",
+      "delivery_city": "الرياض",
+      "delivery_district": "حي النرجس",
+      "delivery_address": "شارع ٣٠، فيلا ١٢",
+      "delivery_date": null,
+      "payment_method": "bank_transfer",
+      "notes": null,
+      "missing_fields": [
+        "delivery_date",
+        "items.0.variant.colour",
+        "items.0.variant.text",
+        "items.1.variant.size",
+        "items.1.variant.colour"
+      ],
+      "language": "gulf_ar",
+      "confidence": 0.95
+    },
+    "reviews": [
+      {
+        "status": "matched",
+        "catalogId": "cake-chocolate",
+        "catalogName": "كيكة شوكولاتة",
+        "catalogPrice": 120,
+        "quotedPrice": 120
+      },
+      {
+        "status": "matched",
+        "catalogId": "cookies",
+        "catalogName": "كوكيز",
+        "catalogPrice": 45,
+        "quotedPrice": 45
+      }
+    ]
+  },
+  "inject": {
+    "kind": "order",
+    "order": {
+      "customer_name": "Sara",
+      "items": [
+        {
+          "name": "chocolate cake",
+          "qty": 1,
+          "variant": null,
+          "unit_price": 120
+        }
+      ],
+      "currency": "SAR",
+      "delivery_city": "Riyadh",
+      "delivery_district": "Al Narjis",
+      "delivery_address": "street 30, villa 12",
+      "delivery_date": null,
+      "payment_method": null,
+      "notes": null,
+      "missing_fields": [
+        "delivery_date",
+        "payment_method",
+        "items.0.variant"
+      ],
+      "language": "en",
+      "confidence": 0.95
+    },
+    "reviews": [
+      {
+        "status": "matched",
+        "catalogId": "cake-chocolate",
+        "catalogName": "كيكة شوكولاتة",
+        "catalogPrice": 120,
+        "quotedPrice": 120
+      }
+    ]
+  }
+}

@@ -116,6 +116,7 @@ export function createApp(client: ModelClient) {
           kind: "order",
           order: outcome.result,
           missing_fields: outcome.result.missing_fields,
+          item_reviews: outcome.reviews,
           attempts: outcome.attempts,
         });
       } catch (error) {

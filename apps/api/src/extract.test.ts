@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { deriveMissingFields } from "@sijil/shared";
+import { deriveMissingFields, extractionJsonSchema } from "@sijil/shared";
 import { describe, expect, it } from "vitest";
 import { extractOrder, type ChatMessage, type ModelClient } from "./extract.js";
 
@@ -132,5 +132,51 @@ describe("extractOrder", () => {
     expect(outcome.ok).toBe(false);
     expect(outcome.attempts).toBe(2);
     expect(client.calls).toHaveLength(2);
+  });
+
+  it("matches c01 to the catalog after the schema check, and the model schema has no catalog id", async () => {
+    const chat = loadChat("c01");
+    const client = fakeClient([modelReply(chat, 0.9)]);
+    const outcome = await extractOrder(transcript(chat), chat.chatDate, client);
+
+    expect(JSON.stringify(extractionJsonSchema)).not.toContain("catalogId");
+    expect(client.calls[0]?.[0]?.content).toContain("كيكة شوكولاتة");
+    expect(client.calls[0]?.[0]?.content).toContain("latest stated value wins");
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok || "noOrder" in outcome.result) return;
+    expect(outcome.reviews.map((review) => review.status)).toEqual(["matched", "matched"]);
+    expect(outcome.reviews.map((review) => review.catalogId)).toEqual(["cake-chocolate", "cookies"]);
+    expect(outcome.result.items.map((item) => item.unit_price)).toEqual([120, 45]);
+  });
+
+  it("flags an unknown item and a price that disagrees, without inventing a price", async () => {
+    const reply = JSON.stringify({
+      noOrder: false,
+      reason: null,
+      order: {
+        customer_name: "نورة",
+        items: [
+          { name: "كيكة شوكولاتة", qty: 1, unit_price: 1, variant: null },
+          { name: "باقة ورد", qty: 1, unit_price: null, variant: null },
+        ],
+        currency: "SAR",
+        delivery_city: "الرياض",
+        delivery_district: "النرجس",
+        delivery_address: "شارع التحلية",
+        delivery_date: "2026-11-04",
+        notes: null,
+        payment_method: "cash_on_delivery",
+        language: "gulf_ar",
+        confidence: 0.9,
+      },
+    });
+    const outcome = await extractOrder("customer: test", "2026-11-03", fakeClient([reply]));
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok || "noOrder" in outcome.result) return;
+    expect(outcome.reviews.map((review) => review.status)).toEqual(["price_mismatch", "unknown"]);
+    expect(outcome.reviews[0]?.quotedPrice).toBe(1);
+    expect(outcome.result.items.map((item) => item.unit_price)).toEqual([120, null]);
+    expect(outcome.reviews[1]?.catalogId).toBeNull();
   });
 });

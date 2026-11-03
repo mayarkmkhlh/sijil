@@ -1,0 +1,34 @@
+/* Sijil v2 colours. The workspace is dark; the order slip is paper. */
+:root {
+  --color-bg: #0c1220;
+  --color-bg-raised: #162033;
+  --color-bg-sunken: #090f1a;
+  --color-ink: #f6f1e7;
+  --color-ink-soft: #c9c0b2;
+  --color-ink-faint: #8e877b;
+  --color-line: rgba(246, 241, 231, 0.1);
+  --color-line-strong: rgba(246, 241, 231, 0.18);
+  --color-gold: #e6a423;
+  --color-gold-deep: #c48a12;
+  --color-gold-ink: #1c1406;
+  --color-gold-soft: rgba(230, 164, 35, 0.18);
+  --color-paper: #f6f1e6;
+  --color-paper-ink: #2a241c;
+  --color-paper-soft: #6f675c;
+  --color-paper-line: #e3d8c6;
+  --color-paper-missing: #f4e3b4;
+  --color-paper-missing-ink: #6d5312;
+  --color-customer: #1a3358;
+  --color-seller: #1c6b4a;
+  --color-ok: #3cae78;
+  --color-ok-soft: rgba(60, 174, 120, 0.16);
+  --color-warn: #e0a23a;
+  --color-warn-soft: rgba(224, 162, 58, 0.16);
+  --color-danger: #e07a68;
+  --color-danger-soft: rgba(224, 122, 104, 0.14);
+  --font: "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+  --shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+  --radius: 1.1rem;
+  color-scheme: dark;
+}
