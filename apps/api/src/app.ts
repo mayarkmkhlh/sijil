@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
-import { OrderSchema, deriveMissingFields } from "@sijil/shared";
+import { OrderSchema, deriveMissingFields, extractionJsonSchema } from "@sijil/shared";
 import { z } from "zod";
 import { loadEnv } from "./env.js";
 import { extractOrder, type ModelClient } from "./extract.js";
@@ -53,6 +53,22 @@ export function createApp(client: ModelClient) {
       modelApiConfigured: env.modelApiConfigured,
     }),
   );
+
+  // Temporary. Delete after reading https://sijil-h48t.onrender.com/api/debug-models
+  app.get("/api/debug-models", async (c) => {
+    const baseUrl = env.MODEL_API_BASE_URL.replace(/\/$/, "");
+    const key = env.MODEL_API_KEY.trim();
+    if (!key) {
+      return c.json({
+        models: { status: 0, ids: [] as string[] },
+        completion: { status: 0, body: "MODEL_API_KEY is empty" },
+      });
+    }
+
+    const models = await probeModels(baseUrl, key);
+    const completion = await probeCompletion(baseUrl, key);
+    return c.json({ models, completion });
+  });
 
   app.post("/api/orders/preview", async (c) => {
     const body: unknown = await c.req.json();
@@ -118,4 +134,66 @@ export function createApp(client: ModelClient) {
   );
 
   return app;
+}
+
+function readModelIds(payload: unknown): string[] {
+  if (!payload || typeof payload !== "object") return [];
+  const data = (payload as { data?: unknown }).data;
+  if (!Array.isArray(data)) return [];
+  return data.flatMap((item) => {
+    if (!item || typeof item !== "object") return [];
+    const id = (item as { id?: unknown }).id;
+    return typeof id === "string" ? [id] : [];
+  });
+}
+
+function redact(body: string, key: string): string {
+  const withoutKey = key ? body.split(key).join("[redacted]") : body;
+  return withoutKey.replace(/Bearer\s+\S+/gi, "Bearer [redacted]").slice(0, 300);
+}
+
+async function probeModels(baseUrl: string, key: string): Promise<{ status: number; ids: string[] }> {
+  try {
+    const response = await fetch(`${baseUrl}/models`, {
+      headers: { Authorization: `Bearer ${key}` },
+      signal: AbortSignal.timeout(30_000),
+    });
+    const payload: unknown = await response.json().catch(() => null);
+    return { status: response.status, ids: readModelIds(payload) };
+  } catch {
+    return { status: 0, ids: [] };
+  }
+}
+
+async function probeCompletion(
+  baseUrl: string,
+  key: string,
+): Promise<{ status: number; body: string }> {
+  try {
+    const response = await fetch(`${baseUrl}/chat/completions`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "muse-spark-1.3",
+        temperature: 0,
+        reasoning_effort: "low",
+        max_completion_tokens: 4000,
+        store: false,
+        messages: [{ role: "user", content: "ping" }],
+        response_format: {
+          type: "json_schema",
+          json_schema: { name: "extraction", schema: extractionJsonSchema },
+        },
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    const raw = await response.text();
+    return { status: response.status, body: redact(raw, key) };
+  } catch (error) {
+    const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
+    return { status: 0, body: timedOut ? "timeout" : "network" };
+  }
 }
