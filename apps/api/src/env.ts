@@ -32,6 +32,9 @@ const envSchema = z.object({
   MODEL_API_BASE_URL: z.string().url().default("https://api.meta.ai/v1"),
   MUSE_SPARK_MODEL: z.string().min(1).default("muse-spark-1.3"),
   PORT: z.coerce.number().int().positive().default(3001),
+  EXTRACT_ENABLED: z.string().default("true"),
+  EXTRACT_IP_LIMIT: z.coerce.number().int().positive().default(30),
+  EXTRACT_DAILY_LIMIT: z.coerce.number().int().nonnegative().default(80),
 });
 
 export type Env = z.infer<typeof envSchema> & {

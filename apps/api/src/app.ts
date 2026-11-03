@@ -5,6 +5,7 @@ import { OrderSchema, deriveMissingFields } from "@sijil/shared";
 import { z } from "zod";
 import { loadEnv } from "./env.js";
 import { extractOrder, type ModelClient } from "./extract.js";
+import { clientIp, createExtractGuard, extractIsEnabled } from "./extract-guard.js";
 import { ModelRequestError } from "./muse-spark.js";
 
 const extractBodySchema = z.object({
@@ -34,6 +35,11 @@ function issuesOf(error: { issues: { path: PropertyKey[]; message: string }[] })
 /** The model is passed in so tests can use a fake and production can pass Muse Spark. */
 export function createApp(client: ModelClient) {
   const env = loadEnv();
+  const extractGuard = createExtractGuard({
+    enabled: extractIsEnabled(env.EXTRACT_ENABLED),
+    ipLimit: env.EXTRACT_IP_LIMIT,
+    dailyLimit: env.EXTRACT_DAILY_LIMIT,
+  });
   const app = new Hono();
   const allowedOrigins = ["http://localhost:5173", process.env.WEB_ORIGIN].filter(
     (origin): origin is string => Boolean(origin),
@@ -75,6 +81,14 @@ export function createApp(client: ModelClient) {
       onError: (c) => c.json({ error: "Payload too large" }, 413),
     }),
     async (c) => {
+      const decision = extractGuard.allow(clientIp(c.req.header("x-forwarded-for")));
+      if (!decision.ok) {
+        if (decision.retryAfterSeconds !== undefined) {
+          c.header("retry-after", String(decision.retryAfterSeconds));
+        }
+        return c.json({ error: decision.error }, decision.status);
+      }
+
       let body: unknown;
       try {
         body = await c.req.json();

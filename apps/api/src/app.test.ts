@@ -43,10 +43,14 @@ const validReply = JSON.stringify({
   },
 });
 
-function postExtract(app: ReturnType<typeof createApp>, body: unknown) {
+function postExtract(
+  app: ReturnType<typeof createApp>,
+  body: unknown,
+  headers: Record<string, string> = {},
+) {
   return app.request("/api/extract", {
     method: "POST",
-    headers: { "content-type": "application/json" },
+    headers: { "content-type": "application/json", ...headers },
     body: JSON.stringify(body),
   });
 }
@@ -118,5 +122,56 @@ describe("POST /api/extract", () => {
 
     expect(response.status).toBe(413);
     expect(client.calls).toBe(0);
+  });
+
+  it("returns 503 and does not call the model when extract is turned off", async () => {
+    process.env.EXTRACT_ENABLED = "false";
+    const client = fakeClient([validReply]);
+    try {
+      const response = await postExtract(createApp(client), { chat: "هلا" });
+      expect(response.status).toBe(503);
+      expect(client.calls).toBe(0);
+      const body = (await response.json()) as { error: string };
+      expect(body.error).toBe("Extract is turned off.");
+    } finally {
+      delete process.env.EXTRACT_ENABLED;
+    }
+  });
+
+  it("returns 429 for the third extract from the same address", async () => {
+    process.env.EXTRACT_IP_LIMIT = "2";
+    const client = fakeClient([validReply, validReply, validReply, validReply]);
+    const forwarded = { "x-forwarded-for": "198.51.100.4, 203.0.113.9" };
+    try {
+      const app = createApp(client);
+      expect((await postExtract(app, { chat: "هلا" }, forwarded)).status).toBe(200);
+      expect((await postExtract(app, { chat: "هلا" }, { "x-forwarded-for": "203.0.113.9" })).status).toBe(200);
+      const blocked = await postExtract(app, { chat: "هلا" }, forwarded);
+      expect(blocked.status).toBe(429);
+      expect(blocked.headers.get("retry-after")).toBeTruthy();
+      expect(client.calls).toBe(2);
+
+      const other = await postExtract(app, { chat: "هلا" }, { "x-forwarded-for": "203.0.113.10" });
+      expect(other.status).toBe(200);
+      expect(client.calls).toBe(3);
+    } finally {
+      delete process.env.EXTRACT_IP_LIMIT;
+    }
+  });
+
+  it("returns 503 once the daily extract limit is reached", async () => {
+    process.env.EXTRACT_DAILY_LIMIT = "1";
+    const client = fakeClient([validReply, validReply]);
+    try {
+      const app = createApp(client);
+      expect((await postExtract(app, { chat: "هلا" })).status).toBe(200);
+      const blocked = await postExtract(app, { chat: "هلا" });
+      expect(blocked.status).toBe(503);
+      expect(client.calls).toBe(1);
+      const body = (await blocked.json()) as { error: string };
+      expect(body.error).toBe("Daily extract limit reached.");
+    } finally {
+      delete process.env.EXTRACT_DAILY_LIMIT;
+    }
   });
 });
