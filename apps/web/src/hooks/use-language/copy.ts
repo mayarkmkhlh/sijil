@@ -55,6 +55,13 @@ export type Copy = {
   confidence: (value: number) => string;
   approve: string;
   approveBlocked: string;
+  sampleKicker: string;
+  sampleInvoice: string;
+  sampleInvoiceNote: string;
+  sampleBillTo: string;
+  askTitle: string;
+  askNote: string;
+  askCopy: string;
   notInCatalog: string;
   catalogPrice: (price: string) => string;
   chatSaid: (price: string) => string;
@@ -127,6 +134,13 @@ const ar: Copy = {
   confidence: (value) => `ثقة ${value.toFixed(2)}`,
   approve: "اعتماد الطلب",
   approveBlocked: "صنف غير موجود في الكتالوج",
+  sampleKicker: "عينة",
+  sampleInvoice: "معاينة فاتورة",
+  sampleInvoiceNote: "لم تُصدر ولم تُرسل، ولم يُدفع شيء.",
+  sampleBillTo: "إلى",
+  askTitle: "رد للنسخ",
+  askNote: "لا يُرسل شيء. انسخه وأرسله بنفسك.",
+  askCopy: "نسخ الرد",
   notInCatalog: "ليس في الكتالوج",
   catalogPrice: (price) => `الكتالوج ${price}`,
   chatSaid: (price) => `المحادثة قالت ${price}`,
@@ -208,6 +222,13 @@ const en: Copy = {
   confidence: (value) => `confidence ${value.toFixed(2)}`,
   approve: "Approve order",
   approveBlocked: "An item is not in the catalog",
+  sampleKicker: "SAMPLE",
+  sampleInvoice: "Invoice preview",
+  sampleInvoiceNote: "Nothing was issued, sent, or paid.",
+  sampleBillTo: "To",
+  askTitle: "Reply to copy",
+  askNote: "Nothing is sent. You copy this and send it yourself.",
+  askCopy: "Copy reply",
   notInCatalog: "Not in the catalog",
   catalogPrice: (price) => `Catalog ${price}`,
   chatSaid: (price) => `Chat said ${price}`,

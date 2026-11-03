@@ -7,7 +7,9 @@ import { editOrder } from "../../libs/helpers/edit-order.helper.js";
 import { askFieldKeys, type AskField } from "../../libs/helpers/missing-ask.helper.js";
 import { missingFieldLabel } from "../../libs/helpers/missing-field-label.helper.js";
 import type { ExtractState } from "../../libs/types/extract-state.type.js";
+import { AskDraft } from "../ask-draft/ask-draft.js";
 import { ApproveBar } from "../approve-bar/approve-bar.js";
+import { SampleInvoice } from "../sample-invoice/sample-invoice.js";
 import { EmptyState } from "../extract-states/empty-state.js";
 import { ErrorState } from "../extract-states/error-state.js";
 import { LoadingState } from "../extract-states/loading-state.js";
@@ -85,6 +87,7 @@ export function OrderSlip({
           onApprove={onApprove}
         />
       ) : null}
+      {approved && order ? <SampleInvoice order={order} copy={copy} /> : null}
     </section>
   );
 }
@@ -179,6 +182,7 @@ function OrderBody({
         amount={total === null ? null : formatAmount(total)}
         currency={order.currency}
       />
+      <AskDraft order={order} copy={copy} />
     </>
   );
 }

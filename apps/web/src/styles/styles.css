@@ -757,6 +757,103 @@ p {
   font-size: 0.8rem;
 }
 
+.ask-draft {
+  margin-top: 0.85rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--color-paper-line);
+}
+
+.ask-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.ask-title {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.ask-copy {
+  padding: 0.4rem 0.75rem;
+  font-size: 0.82rem;
+}
+
+.ask-text {
+  width: 100%;
+  margin-top: 0.4rem;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--color-paper-line);
+  border-radius: 0.7rem;
+  background: #fffdf8;
+  color: var(--color-paper-ink);
+  font: inherit;
+  resize: vertical;
+}
+
+.ask-note {
+  margin: 0.35rem 0 0.45rem;
+  color: var(--color-paper-soft);
+  font-size: 0.78rem;
+}
+
+.sample-invoice {
+  margin-top: 0.75rem;
+  padding: 0.9rem 1rem 1rem;
+  color: var(--color-paper-ink);
+  color-scheme: light;
+  background: var(--color-paper);
+  border: 1px dashed var(--color-gold-deep);
+  border-radius: var(--radius);
+}
+
+.sample-kicker {
+  margin: 0;
+  color: var(--color-gold-deep);
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.sample-invoice h3 {
+  margin: 0.15rem 0 0;
+  font-size: 1.15rem;
+}
+
+.sample-note,
+.sample-to,
+.sample-pay {
+  margin: 0.35rem 0 0;
+  color: var(--color-paper-soft);
+  font-size: 0.82rem;
+}
+
+.sample-lines {
+  margin: 0.7rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sample-lines li,
+.sample-total {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.35rem 0;
+  border-top: 1px solid var(--color-paper-line);
+  font-size: 0.85rem;
+}
+
+.sample-total {
+  margin: 0;
+  grid-template-columns: 1fr auto;
+  font-weight: 700;
+}
+
 @keyframes spin {
   to {
     transform: rotate(-360deg);
