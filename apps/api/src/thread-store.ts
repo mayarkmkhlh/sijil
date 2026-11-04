@@ -12,6 +12,7 @@ function safeJson(value: string): unknown {
 export type ThreadSummary = {
   id: string;
   customerName: string;
+  channel: "shop_link" | "whatsapp";
   preview: string;
   updatedAt: string;
   approved: boolean;
@@ -79,16 +80,68 @@ export async function postCustomerMessage(input: {
   }
 }
 
+export async function ingestWhatsAppMessage(input: {
+  sellerId: string;
+  customerPhone: string;
+  customerName: string;
+  body: string;
+  waMessageId: string;
+}): Promise<void> {
+  const client = await pool.connect();
+  try {
+    await client.query("begin");
+    const thread = await client.query<{ id: string }>(
+      `insert into threads (seller_id, customer_name, channel, customer_phone)
+       values ($1, $2, 'whatsapp', $3)
+       on conflict (seller_id, customer_phone) where customer_phone is not null
+       do update set customer_name = excluded.customer_name, updated_at = now()
+       returning id`,
+      [input.sellerId, input.customerName, input.customerPhone],
+    );
+    const threadId = thread.rows[0]?.id;
+    if (!threadId) {
+      await client.query("rollback");
+      return;
+    }
+    const inserted = await client.query(
+      `insert into thread_messages (thread_id, author, body, wa_message_id)
+       values ($1, 'customer', $2, $3)
+       on conflict (wa_message_id) where wa_message_id is not null
+       do nothing
+       returning id`,
+      [threadId, input.body, input.waMessageId],
+    );
+    if (inserted.rows[0]) {
+      await client.query(`update threads set updated_at = now() where id = $1`, [threadId]);
+    }
+    await client.query("commit");
+  } catch (error) {
+    await client.query("rollback");
+    throw error;
+  } finally {
+    client.release();
+  }
+}
+
+export async function whatsAppRecipient(sellerId: string, threadId: string): Promise<string | null> {
+  const result = await pool.query<{ customer_phone: string | null }>(
+    `select customer_phone from threads where id = $1 and seller_id = $2 and channel = 'whatsapp'`,
+    [threadId, sellerId],
+  );
+  return result.rows[0]?.customer_phone ?? null;
+}
+
 export async function listThreads(sellerId: string): Promise<ThreadSummary[]> {
   const result = await pool.query<{
     id: string;
     customer_name: string;
+    channel: string;
     preview: string | null;
     updated_at: Date;
     approved: boolean;
     unread: boolean;
   }>(
-    `select t.id, t.customer_name, t.updated_at,
+    `select t.id, t.customer_name, t.channel, t.updated_at,
         (select m.body from thread_messages m where m.thread_id = t.id order by m.created_at desc limit 1) as preview,
         exists(select 1 from shop_orders o where o.thread_id = t.id) as approved,
         exists(
@@ -104,6 +157,7 @@ export async function listThreads(sellerId: string): Promise<ThreadSummary[]> {
   return result.rows.map((row) => ({
     id: row.id,
     customerName: row.customer_name,
+    channel: row.channel === "whatsapp" ? "whatsapp" : "shop_link",
     preview: row.preview ?? "",
     updatedAt: row.updated_at.toISOString(),
     approved: row.approved,

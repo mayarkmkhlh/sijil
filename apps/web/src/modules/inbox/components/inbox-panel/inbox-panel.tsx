@@ -67,7 +67,7 @@ export function InboxPanel({
         ))}
       </ul>
       <footer className="inbox-foot">
-        <ConnectChannelButton label={copy.connect} />
+        {countLabel ? null : <ConnectChannelButton label={copy.connect} />}
         <p className="connect-note">{countLabel ? copy.customerLinkHint : copy.connectNote}</p>
       </footer>
     </section>

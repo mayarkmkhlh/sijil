@@ -12,7 +12,9 @@ import {
   postSellerMessage,
   shopName,
   threadApproved,
+  whatsAppRecipient,
 } from "./thread-store.js";
+import { sendWhatsAppText, WhatsAppSendError, type WhatsAppConfig } from "./whatsapp.js";
 import { getShopOrder, listShopOrders, saveShopOrder, shopOrderForThread, updateShopOrder } from "./order-store.js";
 
 const messageSchema = z.object({
@@ -35,7 +37,7 @@ function allowMessage(ip: string): boolean {
   return true;
 }
 
-export function mountThreads(app: Hono) {
+export function mountThreads(app: Hono, whatsapp: WhatsAppConfig) {
   app.get("/api/shops/:id", async (c) => {
     const id = c.req.param("id");
     if (!z.string().uuid().safeParse(id).success) return c.json({ error: "Shop not found." }, 404);
@@ -105,6 +107,16 @@ export function mountThreads(app: Hono) {
     const body = z.object({ body: z.string().trim().min(1).max(2_000) }).safeParse(await c.req.json().catch(() => null));
     if (!body.success) return c.json({ error: "Write a reply." }, 400);
     if (!z.string().uuid().safeParse(c.req.param("id")).success) return c.json({ error: "That chat is not in this shop." }, 404);
+    const recipient = await whatsAppRecipient(seller.id, c.req.param("id"));
+    if (recipient) {
+      try {
+        await sendWhatsAppText(whatsapp, { to: recipient, body: body.data.body });
+      } catch (error) {
+        const message = error instanceof WhatsAppSendError ? error.message : "WhatsApp did not accept the reply.";
+        console.error(message);
+        return c.json({ error: message }, 502);
+      }
+    }
     const messages = await postSellerMessage(seller.id, c.req.param("id"), body.data.body);
     if (!messages) return c.json({ error: "That chat is not in this shop." }, 404);
     return c.json({ messages });

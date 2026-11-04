@@ -51,7 +51,7 @@ export function ChatPanel({
             <Heading level={2}>{conversation.customerName}</Heading>
             <p className="chat-sub">
               {copy.channels[conversation.channel]}
-              {conversation.channel === "shop_link" ? "" : ` (${copy.simulated})`} ·{" "}
+              {/^[0-9a-f-]{36}$/i.test(conversation.id) ? "" : ` (${copy.simulated})`} ·{" "}
               {formatLongDate(conversation.chatDate, language)}
             </p>
           </div>

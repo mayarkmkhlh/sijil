@@ -11,6 +11,7 @@ export type PublicMessage = {
 export type LiveThread = {
   id: string;
   customerName: string;
+  channel?: "shop_link" | "whatsapp";
   preview: string;
   updatedAt: string;
   approved: boolean;

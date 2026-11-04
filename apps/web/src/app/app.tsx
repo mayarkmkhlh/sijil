@@ -224,7 +224,7 @@ export function App() {
   );
 
   async function sendReply() {
-    if (!selected || selected.channel !== "shop_link") return;
+    if (!selected || (selected.channel !== "shop_link" && selected.channel !== "whatsapp")) return;
     const text = (replyDrafts[selected.id] ?? "").trim();
     if (!text) return;
     setReplyBusy(true);
@@ -368,7 +368,7 @@ export function App() {
           language={language}
           copy={copy}
           reply={
-            seller && selected?.channel === "shop_link"
+            seller && (selected?.channel === "shop_link" || selected?.channel === "whatsapp")
               ? {
                   text: replyDrafts[selected.id] ?? "",
                   busy: replyBusy,
@@ -388,7 +388,7 @@ export function App() {
           onRetry={onExtract}
           onEdit={onEdit}
           onUseReply={
-            seller && selected?.channel === "shop_link"
+            seller && (selected?.channel === "shop_link" || selected?.channel === "whatsapp")
               ? (text) => setReplyDrafts((current) => ({ ...current, [selected.id]: text }))
               : undefined
           }
@@ -411,7 +411,7 @@ function toConversation(thread: LiveThread): Conversation {
   return {
     id: thread.id,
     customerName: thread.customerName,
-    channel: "shop_link",
+    channel: thread.channel === "whatsapp" ? "whatsapp" : "shop_link",
     chatLanguage: "en",
     preview: thread.preview,
     updatedAt: thread.updatedAt,

@@ -35,6 +35,12 @@ const envSchema = z.object({
   EXTRACT_ENABLED: z.string().default("true"),
   EXTRACT_IP_LIMIT: z.coerce.number().int().positive().default(30),
   EXTRACT_DAILY_LIMIT: z.coerce.number().int().nonnegative().default(80),
+  WHATSAPP_VERIFY_TOKEN: z.string().default(""),
+  WHATSAPP_APP_SECRET: z.string().default(""),
+  WHATSAPP_ACCESS_TOKEN: z.string().default(""),
+  WHATSAPP_PHONE_NUMBER_ID: z.string().default(""),
+  WHATSAPP_SELLER_ID: z.string().default(""),
+  WHATSAPP_GRAPH_VERSION: z.string().default("v25.0"),
 });
 
 export type Env = z.infer<typeof envSchema> & {

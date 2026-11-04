@@ -9,7 +9,10 @@ import { clientIp, createExtractGuard, extractIsEnabled } from "./extract-guard.
 import { ModelRequestError } from "./muse-spark.js";
 import { mountSeller, sellerForRequest } from "./seller-routes.js";
 import { mountThreads } from "./thread-routes.js";
+import { ingestWhatsAppMessage } from "./thread-store.js";
 import { listProducts, toCatalog } from "./seller-store.js";
+import { mountWhatsApp } from "./whatsapp-routes.js";
+import { whatsAppReady, type WhatsAppConfig } from "./whatsapp.js";
 
 const extractBodySchema = z.object({
   chat: z.string().trim().min(1, "chat is required").max(8_000, "chat is too long"),
@@ -56,14 +59,24 @@ export function createApp(client: ModelClient) {
     }),
   );
 
+  const whatsapp: WhatsAppConfig = {
+    verifyToken: env.WHATSAPP_VERIFY_TOKEN.trim(),
+    appSecret: env.WHATSAPP_APP_SECRET.trim(),
+    accessToken: env.WHATSAPP_ACCESS_TOKEN.trim(),
+    phoneNumberId: env.WHATSAPP_PHONE_NUMBER_ID.trim(),
+    sellerId: env.WHATSAPP_SELLER_ID.trim(),
+    graphVersion: env.WHATSAPP_GRAPH_VERSION.trim() || "v25.0",
+  };
   mountSeller(app);
-  mountThreads(app);
+  mountThreads(app, whatsapp);
+  mountWhatsApp(app, whatsapp, ingestWhatsAppMessage);
 
   app.get("/api/health", (c) =>
     c.json({
       ok: true,
       museSparkModel: env.MUSE_SPARK_MODEL,
       modelApiConfigured: env.modelApiConfigured,
+      whatsappConfigured: whatsAppReady(whatsapp),
     }),
   );
 
