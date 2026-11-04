@@ -870,16 +870,16 @@ p {
 }
 
 .shop {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.8fr);
-  gap: 1.5rem;
+  flex: 1;
   min-height: 0;
-  overflow: auto;
-  padding: 0.25rem 0.2rem 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(16rem, 20rem) minmax(0, 1fr) minmax(16rem, 22rem);
+  overflow: hidden;
 }
 
-.shop-link {
-  grid-column: 1 / -1;
+.shop-column {
+  overflow: auto;
+  padding-bottom: 1.5rem;
 }
 
 .shop-link-url {
@@ -1070,11 +1070,22 @@ p {
 
 .product-row {
   display: grid;
-  grid-template-columns: 3.2rem 1fr auto;
+  grid-template-columns: 3.2rem minmax(0, 1fr) auto;
   gap: 0.75rem;
   align-items: center;
-  padding: 0.55rem 0;
+  padding: 0.55rem;
   border-bottom: 1px solid var(--color-line);
+}
+
+.product-row.is-editing {
+  background: var(--color-gold-soft);
+  border-radius: 0.7rem;
+}
+
+.product-actions {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
 }
 
 .product-meta {
@@ -1094,7 +1105,7 @@ p {
 .product-form {
   display: grid;
   gap: 0.7rem;
-  max-width: 28rem;
+  margin-top: 1rem;
 }
 
 .field-picks {
@@ -1181,8 +1192,13 @@ p {
     min-height: 100%;
   }
 
-  .workspace {
+  .workspace,
+  .shop {
     grid-template-columns: 1fr;
+  }
+
+  .shop {
+    overflow: auto;
   }
 
   .column {

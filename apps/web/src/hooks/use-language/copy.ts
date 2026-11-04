@@ -97,6 +97,10 @@ export type Copy = {
   shopAliases: string;
   shopImage: string;
   shopAdd: string;
+  shopEdit: string;
+  shopSaveProduct: string;
+  shopCancel: string;
+  shopImageKeep: string;
   shopEmpty: string;
   shopDelete: string;
   shopFields: string;
@@ -258,6 +262,10 @@ const ar: Copy = {
   shopAliases: "أسماء أخرى، مفصولة بفاصلة",
   shopImage: "صورة",
   shopAdd: "إضافة",
+  shopEdit: "تعديل",
+  shopSaveProduct: "حفظ التعديل",
+  shopCancel: "إلغاء",
+  shopImageKeep: "تبقى الصورة الحالية إن لم تختر صورة جديدة.",
   shopEmpty: "لا توجد منتجات بعد. أضف ما تبيعه. إلى ذلك الحين يُستخدم كتالوج العرض.",
   shopDelete: "حذف",
   shopFields: "ما يُستخرج من المحادثة",
@@ -443,6 +451,10 @@ const en: Copy = {
   shopAliases: "Other names, separated by commas",
   shopImage: "Image",
   shopAdd: "Add product",
+  shopEdit: "Edit",
+  shopSaveProduct: "Save changes",
+  shopCancel: "Cancel",
+  shopImageKeep: "The current image stays unless you choose a new one.",
   shopEmpty: "No products yet. Add what you sell. Until then, extracts use the demo catalog.",
   shopDelete: "Delete",
   shopFields: "Extract these from chats",

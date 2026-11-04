@@ -64,6 +64,16 @@ export async function addProduct(form: FormData): Promise<void> {
   if (!response.ok) throw new HttpError(response.status, payload);
 }
 
+export async function updateProduct(id: string, form: FormData): Promise<void> {
+  const response = await fetch(`${apiBaseUrl}/api/products/${id}`, {
+    method: "PATCH",
+    credentials: "include",
+    body: form,
+  });
+  const payload: unknown = await response.json().catch(() => null);
+  if (!response.ok) throw new HttpError(response.status, payload);
+}
+
 export async function removeProduct(id: string): Promise<void> {
   const response = await fetch(`${apiBaseUrl}/api/products/${id}`, {
     method: "DELETE",

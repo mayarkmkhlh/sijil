@@ -167,6 +167,38 @@ export async function addProduct(input: {
   return { id, name: input.name, aliases: input.aliases, price: input.price, hasImage: input.image !== null };
 }
 
+export async function updateProduct(input: {
+  sellerId: string;
+  productId: string;
+  name: string;
+  aliases: string[];
+  price: number;
+  image: { bytes: Buffer; type: string } | null;
+}): Promise<ProductRow | null> {
+  const result = await pool.query<{ id: string; has_image: boolean }>(
+    `update products
+     set name = $3,
+         aliases = $4,
+         price = $5,
+         image_bytes = case when $6::bytea is null then image_bytes else $6 end,
+         image_type = case when $7::text is null then image_type else $7 end
+     where id = $1 and seller_id = $2
+     returning id, image_bytes is not null as has_image`,
+    [
+      input.productId,
+      input.sellerId,
+      input.name,
+      input.aliases,
+      input.price,
+      input.image?.bytes ?? null,
+      input.image?.type ?? null,
+    ],
+  );
+  const row = result.rows[0];
+  if (!row) return null;
+  return { id: row.id, name: input.name, aliases: input.aliases, price: input.price, hasImage: row.has_image };
+}
+
 export async function deleteProduct(sellerId: string, productId: string): Promise<boolean> {
   const result = await pool.query(`delete from products where id = $1 and seller_id = $2`, [
     productId,

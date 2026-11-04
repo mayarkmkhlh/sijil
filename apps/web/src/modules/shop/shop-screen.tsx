@@ -12,6 +12,7 @@ import {
   loadProducts,
   removeProduct,
   saveFields,
+  updateProduct,
   type ShopProduct,
 } from "./account-api.js";
 
@@ -27,6 +28,7 @@ export function ShopScreen({
   onFields: (fields: string[]) => void;
 }) {
   const [products, setProducts] = useState<ShopProduct[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [aliases, setAliases] = useState("");
@@ -47,7 +49,24 @@ export function ShopScreen({
     setChosen([...fields]);
   }, [fields]);
 
-  async function createProduct(event: FormEvent) {
+  function resetForm() {
+    setEditingId(null);
+    setName("");
+    setPrice("");
+    setAliases("");
+    setImage(null);
+  }
+
+  function edit(product: ShopProduct) {
+    setError(null);
+    setEditingId(product.id);
+    setName(product.name);
+    setPrice(String(product.price));
+    setAliases(product.aliases.join(", "));
+    setImage(null);
+  }
+
+  async function saveProduct(event: FormEvent) {
     event.preventDefault();
     setBusy(true);
     setError(null);
@@ -57,12 +76,10 @@ export function ShopScreen({
     form.set("aliases", aliases);
     if (image) form.set("image", image);
     try {
-      await addProduct(form);
+      if (editingId) await updateProduct(editingId, form);
+      else await addProduct(form);
       setProducts(await loadProducts());
-      setName("");
-      setPrice("");
-      setAliases("");
-      setImage(null);
+      resetForm();
     } catch (caught) {
       setError(accountError(caught));
     } finally {
@@ -98,7 +115,7 @@ export function ShopScreen({
 
   return (
     <div className="shop">
-      <section className="shop-link">
+      <section className="column shop-column">
         <Heading level={2}>{copy.customerLink}</Heading>
         <p className="shop-note">{copy.customerLinkHint}</p>
         <p className="shop-link-url" dir="ltr">
@@ -113,12 +130,12 @@ export function ShopScreen({
           {linkCopied ? copy.copied : copy.customerCopyLink}
         </Button>
       </section>
-      <section>
+      <section className="column shop-column">
         <Heading level={2}>{copy.shopProducts}</Heading>
         {products.length === 0 ? <p className="shop-note">{copy.shopEmpty}</p> : null}
         <ul className="product-list">
           {products.map((product) => (
-            <li key={product.id} className="product-row">
+            <li key={product.id} className={product.id === editingId ? "product-row is-editing" : "product-row"}>
               {product.hasImage ? <ProductPhoto id={product.id} /> : <span className="product-photo" />}
               <span>
                 <strong>{product.name}</strong>
@@ -127,13 +144,19 @@ export function ShopScreen({
                   {product.aliases.length > 0 ? ` · ${product.aliases.join(", ")}` : ""}
                 </span>
               </span>
-              <Button variant="quiet" onClick={() => void destroy(product.id)}>
-                {copy.shopDelete}
-              </Button>
+              <span className="product-actions">
+                <Button variant="ghost" onClick={() => edit(product)}>
+                  {copy.shopEdit}
+                </Button>
+                <Button variant="quiet" onClick={() => void destroy(product.id)}>
+                  {copy.shopDelete}
+                </Button>
+              </span>
             </li>
           ))}
         </ul>
-        <form className="product-form" onSubmit={(event) => void createProduct(event)}>
+        <form className="product-form" onSubmit={(event) => void saveProduct(event)}>
+          {error ? <p className="auth-error">{error}</p> : null}
           <Input label={copy.shopProductName} value={name} onChange={(event) => setName(event.target.value)} required />
           <Input
             label={copy.shopPrice}
@@ -146,17 +169,26 @@ export function ShopScreen({
           <label className="field">
             <span>{copy.shopImage}</span>
             <input
+              key={editingId ?? "new"}
               type="file"
               accept="image/jpeg,image/png,image/webp"
               onChange={(event) => setImage(event.target.files?.[0] ?? null)}
             />
           </label>
-          <Button disabled={busy} type="submit">
-            {copy.shopAdd}
-          </Button>
+          {editingId ? <p className="shop-note">{copy.shopImageKeep}</p> : null}
+          <span className="product-actions">
+            <Button disabled={busy} type="submit">
+              {editingId ? copy.shopSaveProduct : copy.shopAdd}
+            </Button>
+            {editingId ? (
+              <Button variant="ghost" type="button" onClick={resetForm}>
+                {copy.shopCancel}
+              </Button>
+            ) : null}
+          </span>
         </form>
       </section>
-      <section>
+      <section className="column shop-column">
         <Heading level={2}>{copy.shopFields}</Heading>
         <p className="shop-note">{copy.shopFieldsNote}</p>
         <ul className="field-picks">
@@ -171,7 +203,6 @@ export function ShopScreen({
         </ul>
         <Button onClick={() => void saveChosen()}>{saved ? copy.shopSaved : copy.shopSaveFields}</Button>
       </section>
-      {error ? <p className="auth-error">{error}</p> : null}
     </div>
   );
 }

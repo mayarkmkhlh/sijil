@@ -7,6 +7,7 @@ import {
   closeSession,
   createSeller,
   deleteProduct,
+  updateProduct,
   listProducts,
   loginSeller,
   openSession,
@@ -76,6 +77,34 @@ function databaseDown(error: unknown): boolean {
   if (typeof error !== "object" || error === null) return false;
   const code = "code" in error ? String(error.code) : "";
   return code === "42P01" || code === "3D000" || code === "ECONNREFUSED" || code === "ENOTFOUND";
+}
+
+async function readProductForm(
+  body: Record<string, string | File>,
+): Promise<
+  | { ok: true; value: { name: string; price: number; aliases: string[]; image: { bytes: Buffer; type: string } | null } }
+  | { ok: false; error: string; status: 400 | 413 }
+> {
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const price = typeof body.price === "string" ? Number(body.price) : Number.NaN;
+  const aliases =
+    typeof body.aliases === "string"
+      ? body.aliases
+          .split(",")
+          .map((alias) => alias.trim())
+          .filter((alias) => alias.length > 0)
+          .slice(0, 12)
+      : [];
+  if (!name || !Number.isFinite(price) || price < 0) {
+    return { ok: false, error: "Enter a product name and a price.", status: 400 };
+  }
+  let image: { bytes: Buffer; type: string } | null = null;
+  if (body.image instanceof File && body.image.size > 0) {
+    if (!imageTypes.has(body.image.type)) return { ok: false, error: "Use a JPEG, PNG, or WebP image.", status: 400 };
+    if (body.image.size > maxImageBytes) return { ok: false, error: "Image is too large", status: 413 };
+    image = { bytes: Buffer.from(await body.image.arrayBuffer()), type: body.image.type };
+  }
+  return { ok: true, value: { name, price, aliases, image } };
 }
 
 export function mountSeller(app: Hono) {
@@ -149,39 +178,30 @@ export function mountSeller(app: Hono) {
     return c.json({ products });
   });
 
-  app.post(
-    "/api/products",
-    bodyLimit({
-      maxSize: 1_500_000,
-      onError: (c) => c.json({ error: "Image is too large" }, 413),
-    }),
-    async (c) => {
-      const seller = await currentSeller(c.req.header("cookie")).catch(() => null);
-      if (!seller) return c.json({ error: "Log in first." }, 401);
-      const body = await c.req.parseBody();
-      const name = typeof body.name === "string" ? body.name.trim() : "";
-      const price = typeof body.price === "string" ? Number(body.price) : Number.NaN;
-      const aliases =
-        typeof body.aliases === "string"
-          ? body.aliases
-              .split(",")
-              .map((alias) => alias.trim())
-              .filter((alias) => alias.length > 0)
-              .slice(0, 12)
-          : [];
-      if (!name || !Number.isFinite(price) || price < 0) {
-        return c.json({ error: "Enter a product name and a price." }, 400);
-      }
-      let image: { bytes: Buffer; type: string } | null = null;
-      if (body.image instanceof File && body.image.size > 0) {
-        if (!imageTypes.has(body.image.type)) return c.json({ error: "Use a JPEG, PNG, or WebP image." }, 400);
-        if (body.image.size > maxImageBytes) return c.json({ error: "Image is too large" }, 413);
-        image = { bytes: Buffer.from(await body.image.arrayBuffer()), type: body.image.type };
-      }
-      const product = await addProduct({ sellerId: seller.id, name, aliases, price, image });
-      return c.json({ product }, 201);
-    },
-  );
+  const productBodyLimit = bodyLimit({
+    maxSize: 1_500_000,
+    onError: (c) => c.json({ error: "Image is too large" }, 413),
+  });
+
+  app.post("/api/products", productBodyLimit, async (c) => {
+    const seller = await currentSeller(c.req.header("cookie")).catch(() => null);
+    if (!seller) return c.json({ error: "Log in first." }, 401);
+    const parsed = await readProductForm(await c.req.parseBody());
+    if (!parsed.ok) return c.json({ error: parsed.error }, parsed.status);
+    const product = await addProduct({ sellerId: seller.id, ...parsed.value });
+    return c.json({ product }, 201);
+  });
+
+  app.patch("/api/products/:id", productBodyLimit, async (c) => {
+    const seller = await currentSeller(c.req.header("cookie")).catch(() => null);
+    if (!seller) return c.json({ error: "Log in first." }, 401);
+    if (!z.string().uuid().safeParse(c.req.param("id")).success) return c.json({ error: "Product not found." }, 404);
+    const parsed = await readProductForm(await c.req.parseBody());
+    if (!parsed.ok) return c.json({ error: parsed.error }, parsed.status);
+    const product = await updateProduct({ sellerId: seller.id, productId: c.req.param("id"), ...parsed.value });
+    if (!product) return c.json({ error: "Product not found." }, 404);
+    return c.json({ product });
+  });
 
   app.delete("/api/products/:id", async (c) => {
     const seller = await currentSeller(c.req.header("cookie")).catch(() => null);
