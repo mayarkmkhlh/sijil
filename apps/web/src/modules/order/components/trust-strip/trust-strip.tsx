@@ -15,8 +15,8 @@ export function TrustStrip({
 }) {
   const parts = [
     meta.attempts === null ? null : copy.attempt(meta.attempts),
-    `${(meta.elapsedMs / 1000).toFixed(1)}s`,
-    model,
+    meta.elapsedMs > 0 ? `${(meta.elapsedMs / 1000).toFixed(1)}s` : null,
+    meta.elapsedMs > 0 ? model : null,
     typeof confidence === "number" ? copy.confidence(confidence) : null,
   ].filter((part): part is string => Boolean(part));
 

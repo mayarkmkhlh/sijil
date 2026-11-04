@@ -15,6 +15,7 @@ export function InboxPanel({
   filter,
   statusOf,
   missingCount,
+  countLabel,
   language,
   copy,
   onFilter,
@@ -25,6 +26,7 @@ export function InboxPanel({
   filter: InboxFilter;
   statusOf: (conversationId: string) => ConversationStatus | null;
   missingCount: (conversationId: string) => number | null;
+  countLabel?: string;
   language: Language;
   copy: Copy;
   onFilter: (filter: InboxFilter) => void;
@@ -38,7 +40,7 @@ export function InboxPanel({
     <section className="column inbox-column">
       <header className="inbox-head">
         <Heading level={2}>{copy.inbox}</Heading>
-        <p className="inbox-count">{copy.chatCount(conversations.length)}</p>
+        <p className="inbox-count">{countLabel ?? copy.chatCount(conversations.length)}</p>
         <SegmentedControl
           label={copy.filterLabel}
           value={filter}
@@ -66,7 +68,7 @@ export function InboxPanel({
       </ul>
       <footer className="inbox-foot">
         <ConnectChannelButton label={copy.connect} />
-        <p className="connect-note">{copy.connectNote}</p>
+        <p className="connect-note">{countLabel ? copy.customerLinkHint : copy.connectNote}</p>
       </footer>
     </section>
   );

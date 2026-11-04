@@ -1,12 +1,15 @@
 import { Hono } from "hono";
 import { bodyLimit } from "hono/body-limit";
 import { cors } from "hono/cors";
-import { OrderSchema, deriveMissingFields } from "@sijil/shared";
+import { OrderSchema, deriveMissingFields, keepMissingField } from "@sijil/shared";
 import { z } from "zod";
 import { loadEnv } from "./env.js";
 import { extractOrder, type ModelClient } from "./extract.js";
 import { clientIp, createExtractGuard, extractIsEnabled } from "./extract-guard.js";
 import { ModelRequestError } from "./muse-spark.js";
+import { mountSeller, sellerForRequest } from "./seller-routes.js";
+import { mountThreads } from "./thread-routes.js";
+import { listProducts, toCatalog } from "./seller-store.js";
 
 const extractBodySchema = z.object({
   chat: z.string().trim().min(1, "chat is required").max(8_000, "chat is too long"),
@@ -49,8 +52,12 @@ export function createApp(client: ModelClient) {
     "/api/*",
     cors({
       origin: allowedOrigins,
+      credentials: true,
     }),
   );
+
+  mountSeller(app);
+  mountThreads(app);
 
   app.get("/api/health", (c) =>
     c.json({
@@ -100,8 +107,14 @@ export function createApp(client: ModelClient) {
       if (!parsed.success) return c.json({ issues: issuesOf(parsed.error) }, 400);
 
       const chatDate = parsed.data.chatDate ?? todayInRiyadh();
+      const seller = await sellerForRequest(c.req.header("cookie"));
+      let sellerCatalog: Awaited<ReturnType<typeof toCatalog>> | undefined;
+      if (seller) {
+        const products = await listProducts(seller.id).catch(() => []);
+        if (products.length > 0) sellerCatalog = toCatalog(products);
+      }
       try {
-        const outcome = await extractOrder(parsed.data.chat, chatDate, client);
+        const outcome = await extractOrder(parsed.data.chat, chatDate, client, sellerCatalog);
         if (!outcome.ok) {
           return c.json({ issues: outcome.issues, attempts: outcome.attempts }, 422);
         }
@@ -112,10 +125,14 @@ export function createApp(client: ModelClient) {
             attempts: outcome.attempts,
           });
         }
+        const missing = seller
+          ? outcome.result.missing_fields.filter((path) => keepMissingField(path, seller.extractFields))
+          : outcome.result.missing_fields;
+        const order = { ...outcome.result, missing_fields: missing };
         return c.json({
           kind: "order",
-          order: outcome.result,
-          missing_fields: outcome.result.missing_fields,
+          order,
+          missing_fields: missing,
           item_reviews: outcome.reviews,
           attempts: outcome.attempts,
         });

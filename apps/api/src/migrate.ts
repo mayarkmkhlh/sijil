@@ -1,19 +1,22 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { pool } from "./db.js";
 
-const sqlPath = resolve(dirname(fileURLToPath(import.meta.url)), "../migrations/001_orders.sql");
+const migrationsDir = resolve(dirname(fileURLToPath(import.meta.url)), "../migrations");
 
 if (!process.env.DATABASE_URL) {
   console.error("DATABASE_URL is not set");
   process.exit(1);
 }
 
-const sql = await readFile(sqlPath, "utf8");
+const files = (await readdir(migrationsDir)).filter((file) => file.endsWith(".sql")).sort();
 
 try {
-  await pool.query(sql);
+  for (const file of files) {
+    const sql = await readFile(resolve(migrationsDir, file), "utf8");
+    await pool.query(sql);
+  }
   console.log("migrated");
 } finally {
   await pool.end();

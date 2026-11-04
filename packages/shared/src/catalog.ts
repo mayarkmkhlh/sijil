@@ -93,13 +93,19 @@ export function reviewItem(
   return { status: "price_mismatch", ...review };
 }
 
-export function reviewItems(items: readonly Item[]): ItemReview[] {
-  return items.map((item) => reviewItem(item.name, item.unit_price));
+export function reviewItems(
+  items: readonly Item[],
+  catalogItems: readonly CatalogItem[] = catalog,
+): ItemReview[] {
+  return items.map((item) => reviewItem(item.name, item.unit_price, catalogItems));
 }
 
 /** The catalog price replaces a missing price and a price the chat invented. Unknown lines stay untouched. */
-export function applyCatalog(order: Order): { order: Order; reviews: ItemReview[] } {
-  const reviews = reviewItems(order.items);
+export function applyCatalog(
+  order: Order,
+  catalogItems: readonly CatalogItem[] = catalog,
+): { order: Order; reviews: ItemReview[] } {
+  const reviews = reviewItems(order.items, catalogItems);
   const items = order.items.map((item, index) => {
     const review = reviews[index];
     if (!review || review.catalogPrice === null || review.status === "unknown") return item;

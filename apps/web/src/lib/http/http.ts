@@ -15,7 +15,7 @@ export class HttpError extends Error {
 export async function getJson(path: string): Promise<unknown> {
   let response: Response;
   try {
-    response = await fetch(`${apiBaseUrl}${path}`);
+    response = await fetch(`${apiBaseUrl}${path}`, { credentials: "include" });
   } catch {
     throw new HttpError(0, null);
   }
@@ -24,11 +24,20 @@ export async function getJson(path: string): Promise<unknown> {
   return payload;
 }
 
+export async function patchJson(path: string, body: unknown): Promise<unknown> {
+  return sendJson(path, "PATCH", body);
+}
+
 export async function postJson(path: string, body: unknown): Promise<unknown> {
+  return sendJson(path, "POST", body);
+}
+
+async function sendJson(path: string, method: "POST" | "PATCH", body: unknown): Promise<unknown> {
   let response: Response;
   try {
     response = await fetch(`${apiBaseUrl}${path}`, {
-      method: "POST",
+      method,
+      credentials: "include",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(body),
     });

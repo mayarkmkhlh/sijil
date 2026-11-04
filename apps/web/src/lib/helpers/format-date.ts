@@ -6,7 +6,7 @@ function locale(language: Language): string {
   return language === "ar" ? "ar" : "en";
 }
 
-function riyadhDay(date: Date): string {
+export function riyadhDay(date: Date): string {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: RIYADH,
     year: "numeric",

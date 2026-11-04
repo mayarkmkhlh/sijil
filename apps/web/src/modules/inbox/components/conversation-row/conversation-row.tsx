@@ -27,7 +27,13 @@ export function ConversationRow({
     <li>
       <button
         type="button"
-        className={selected ? "conversation is-selected" : "conversation"}
+        className={[
+          "conversation",
+          selected ? "is-selected" : "",
+          conversation.unread && !selected ? "is-unread" : "",
+        ]
+          .filter(Boolean)
+          .join(" ")}
         aria-current={selected ? "true" : undefined}
         onClick={onSelect}
       >

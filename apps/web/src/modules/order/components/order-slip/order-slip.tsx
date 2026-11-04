@@ -1,4 +1,5 @@
 import { currencySchema, paymentMethodSchema, type ItemReview, type Order } from "@sijil/shared";
+import { Button } from "../../../../components/button/button.js";
 import { Heading } from "../../../../components/heading/heading.js";
 import type { Copy } from "../../../../hooks/use-language/copy.js";
 import { formatAmount } from "../../../../lib/helpers/format-money.js";
@@ -33,6 +34,9 @@ export function OrderSlip({
   onApprove,
   onRetry,
   onEdit,
+  onUseReply,
+  savedOrder,
+  onViewOrder,
   approveBlocked = false,
 }: {
   state: ExtractState;
@@ -42,6 +46,9 @@ export function OrderSlip({
   onApprove: () => void;
   onRetry: () => void;
   onEdit: (order: Order) => void;
+  onUseReply?: (text: string) => void;
+  savedOrder?: { orderNumber: string } | null;
+  onViewOrder?: () => void;
   approveBlocked?: boolean;
 }) {
   const live = state.status === "order" ? state : null;
@@ -58,7 +65,14 @@ export function OrderSlip({
         ) : null}
         {state.status === "error" && state.cached ? <p className="cache-note">{copy.cachedReply}</p> : null}
         {order ? (
-          <OrderBody order={order} reviews={reviews} approved={approved} copy={copy} onEdit={onEdit} />
+          <OrderBody
+            order={order}
+            reviews={reviews}
+            approved={approved}
+            copy={copy}
+            onEdit={onEdit}
+            onUseReply={onUseReply}
+          />
         ) : null}
         {state.status === "idle" ? <EmptyState copy={copy} /> : null}
         {state.status === "loading" ? <LoadingState copy={copy} /> : null}
@@ -87,7 +101,19 @@ export function OrderSlip({
           onApprove={onApprove}
         />
       ) : null}
-      {approved && order ? <SampleInvoice order={order} copy={copy} /> : null}
+      {savedOrder ? (
+        <div className="order-created no-print">
+          <p className="order-created-number">{copy.orderCreated(savedOrder.orderNumber)}</p>
+          <p>{copy.orderSaved}</p>
+          <div className="order-created-actions">
+            <Button onClick={onViewOrder}>{copy.viewOrder}</Button>
+            <Button variant="ghost" onClick={onViewOrder}>
+              {copy.viewConfirmation}
+            </Button>
+          </div>
+        </div>
+      ) : null}
+      {approved && order && !savedOrder ? <SampleInvoice order={order} copy={copy} /> : null}
     </section>
   );
 }
@@ -98,12 +124,14 @@ function OrderBody({
   approved,
   copy,
   onEdit,
+  onUseReply,
 }: {
   order: Order;
   reviews: readonly ItemReview[];
   approved: boolean;
   copy: Copy;
   onEdit: (order: Order) => void;
+  onUseReply?: (text: string) => void;
 }) {
   const total = deriveTotal(order.items);
   const stamp = approved
@@ -182,7 +210,7 @@ function OrderBody({
         amount={total === null ? null : formatAmount(total)}
         currency={order.currency}
       />
-      <AskDraft order={order} copy={copy} />
+      <AskDraft order={order} copy={copy} onUse={onUseReply} />
     </>
   );
 }

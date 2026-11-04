@@ -11,4 +11,5 @@ export type Conversation = {
   preview: string;
   updatedAt: string;
   chatDate: string;
+  unread?: boolean;
 };
