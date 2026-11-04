@@ -156,7 +156,11 @@ export function App() {
             setArea("shop");
             setGate({ status: "seller", seller });
           }}
-          onDemo={() => setGate({ status: "demo" })}
+          onDemo={
+            window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+              ? () => setGate({ status: "demo" })
+              : undefined
+          }
         />
       </div>
     );

@@ -12,7 +12,7 @@ export function AuthScreen({
 }: {
   copy: Copy;
   onSeller: (seller: SellerAccount) => void;
-  onDemo: () => void;
+  onDemo?: () => void;
 }) {
   const [mode, setMode] = useState<"signup" | "login">("signup");
   const [shopName, setShopName] = useState("");
@@ -72,9 +72,11 @@ export function AuthScreen({
       >
         {mode === "signup" ? copy.authSwitchToLogin : copy.authSwitchToSignup}
       </Button>
-      <Button variant="ghost" type="button" onClick={onDemo}>
-        {copy.authDemo}
-      </Button>
+      {onDemo ? (
+        <Button variant="ghost" type="button" onClick={onDemo}>
+          {copy.authDemo}
+        </Button>
+      ) : null}
     </form>
   );
 }
