@@ -2,6 +2,8 @@
 
 Sijil (سجل) turns a customer conversation into an order the seller approves before it is saved.
 
+The deployed app is at https://sijil-web.onrender.com.
+
 Small shops take orders in chat and then lose the quantity, the district, or whether the customer has paid. Sijil keeps the catalog, the chat, and the order in one place. The seller decides what must be collected. The model reads the chat only when the seller presses Extract. Nothing is sent to the customer, and nothing is saved, until the seller presses the button.
 
 ## What a seller can do
